@@ -7,10 +7,33 @@ A web application to track and manage multiple factory locations in Satisfactory
 - **Frontend Framework**: Vue.js 3.5.13 (Composition API with `<script setup>`)
 - **Build Tool**: Vite
 - **UI Library**: Preline UI v3.2.1
-- **CSS Framework**: Tailwind CSS v4.0
+- **CSS Framework**: Tailwind CSS v4.0 (via @tailwindcss/vite plugin)
 - **Additional Plugin**: @tailwindcss/forms (required by Preline UI)
 - **Data Persistence**: LocalStorage with JSON export/import functionality
 - **Language**: TypeScript
+
+### ⚠️ CRITICAL: Version Consistency Requirements
+
+**IT IS PARAMOUNT** that all code follows the EXACT patterns for the versions specified above. Do NOT mix Tailwind CSS v3 and v4 syntax, or use deprecated patterns from older versions.
+
+#### Tailwind CSS v4 Specific Requirements:
+1. **MUST** use `@tailwindcss/vite` plugin in `vite.config.ts` (NOT PostCSS)
+2. **MUST** use `@import "tailwindcss";` in CSS files (NOT `@tailwind` directives)
+3. **MUST** use `@plugin` directive for plugins in CSS (e.g., `@plugin '@tailwindcss/forms';`)
+4. **DO NOT** use `tailwind.config.js` - v4 uses CSS-based configuration
+5. **DO NOT** use `@tailwindcss/postcss` - only use for non-Vite projects
+
+#### Vue 3 Specific Requirements:
+1. **MUST** use Composition API with `<script setup>` syntax
+2. **MUST** use TypeScript for all component logic
+3. **DO NOT** use Options API unless absolutely necessary
+
+#### Preline UI Requirements:
+1. **MUST** initialize with `window.HSStaticMethods.autoInit()` after route changes
+2. **MUST** import both JS and CSS: `import 'preline/preline'` and `@import 'preline/preline.css'`
+3. **MUST** reference official Preline UI documentation for component markup
+
+**When in doubt, ALWAYS check the official documentation for the current version before writing code.**
 
 ## Core Features
 
