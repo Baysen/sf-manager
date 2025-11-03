@@ -29,9 +29,11 @@ A web application to track and manage multiple factory locations in Satisfactory
 3. **DO NOT** use Options API unless absolutely necessary
 
 #### Preline UI Requirements:
-1. **MUST** initialize with `window.HSStaticMethods.autoInit()` after route changes
-2. **MUST** import both JS and CSS: `import 'preline/preline'` and `@import 'preline/preline.css'`
-3. **MUST** reference official Preline UI documentation for component markup
+1. **MUST** import `preline/variants.css` in CSS: `@import 'preline/variants.css';`
+2. **MUST** use `@source` directive to include Preline JS: `@source '../../node_modules/preline/dist/*.js';`
+3. **MUST** import `'preline/preline'` in main.ts for TypeScript support
+4. **MUST** initialize with `window.HSStaticMethods.autoInit()` after route changes
+5. **MUST** reference official Preline UI documentation for component markup
 
 **When in doubt, ALWAYS check the official documentation for the current version before writing code.**
 
