@@ -23,11 +23,8 @@ const handleSelectLocation = (id: string) => {
   activeLocationId.value = id;
 };
 
-const handleAddLocation = () => {
-  const name = prompt('Enter location name:');
-  if (name && name.trim()) {
-    addLocation(name.trim());
-  }
+const handleAddLocation = (name: string) => {
+  addLocation(name);
 };
 </script>
 

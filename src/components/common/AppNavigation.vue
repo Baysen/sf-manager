@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import ExportImport from './ExportImport.vue';
 
 const activeTab = ref<'locations' | 'recipes'>('locations');
 
@@ -48,6 +49,9 @@ const handleTabChange = (tab: 'locations' | 'recipes') => {
             </div>
           </div>
         </div>
+
+        <!-- Export/Import Controls -->
+        <ExportImport />
       </div>
     </div>
   </nav>
