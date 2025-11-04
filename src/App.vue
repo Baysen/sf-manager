@@ -1,19 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import AppNavigation from './components/common/AppNavigation.vue';
 import LocationTabs from './components/locations/LocationTabs.vue';
 import LocationView from './components/locations/LocationView.vue';
 import RecipesView from './components/recipes/RecipesView.vue';
 import { useLocations } from './composables/useLocations';
-import { useRecipes } from './composables/useRecipes';
 
 const activeView = ref<'locations' | 'recipes'>('locations');
 const { locations, activeLocationId, addLocation } = useLocations();
-const { loadRecipes } = useRecipes();
-
-onMounted(() => {
-  loadRecipes();
-});
 
 const handleTabChange = (tab: 'locations' | 'recipes') => {
   activeView.value = tab;
