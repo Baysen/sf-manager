@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { Location, ProductionLine } from '../types/location';
+import type { Location, ProductionLine, ResourceExtractionLine } from '../types/location';
 import { useStorage } from './useStorage';
 
 const locations = ref<Location[]>([]);
@@ -24,6 +24,7 @@ export function useLocations() {
     const newLocation: Location = {
       id: `loc-${Date.now()}`,
       name,
+      resourceExtractionLines: [],
       productionLines: []
     };
     locations.value.push(newLocation);
@@ -78,6 +79,37 @@ export function useLocations() {
     }
   };
 
+  const addResourceExtractionLine = (locationId: string, extractionLine: Omit<ResourceExtractionLine, 'id'>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const newLine: ResourceExtractionLine = {
+        ...extractionLine,
+        id: `extraction-${Date.now()}`
+      };
+      location.resourceExtractionLines.push(newLine);
+    }
+  };
+
+  const updateResourceExtractionLine = (locationId: string, lineId: string, updates: Partial<Omit<ResourceExtractionLine, 'id'>>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const line = location.resourceExtractionLines.find(l => l.id === lineId);
+      if (line) {
+        Object.assign(line, updates);
+      }
+    }
+  };
+
+  const deleteResourceExtractionLine = (locationId: string, lineId: string) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const index = location.resourceExtractionLines.findIndex(l => l.id === lineId);
+      if (index !== -1) {
+        location.resourceExtractionLines.splice(index, 1);
+      }
+    }
+  };
+
   const handleExport = () => {
     exportData(locations.value);
   };
@@ -102,6 +134,9 @@ export function useLocations() {
     addProductionLine,
     updateProductionLine,
     deleteProductionLine,
+    addResourceExtractionLine,
+    updateResourceExtractionLine,
+    deleteResourceExtractionLine,
     handleExport,
     handleImport
   };
