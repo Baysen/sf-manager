@@ -4,39 +4,11 @@ import type { Recipe } from '../types/recipe';
 const recipes = ref<Recipe[]>([]);
 
 export function useRecipes() {
-  const loadRecipes = () => {
-    // TODO: Load from recipes.json file
-    // For now, using sample data - only initialize if not already loaded
+  const loadRecipes = async () => {
+    // TODO: Load from recipes.json file when available
+    // For now, initialize with empty array
     if (recipes.value.length === 0) {
-      recipes.value = [
-        {
-          id: 'iron-ingot',
-          name: 'Iron Ingot',
-          machine: 'Smelter',
-          isAlternate: false,
-          inputs: [{ resource: 'Iron Ore', amount: 30 }],
-          outputs: [{ resource: 'Iron Ingot', amount: 30 }],
-          powerConsumption: 4
-        },
-        {
-          id: 'iron-plate',
-          name: 'Iron Plate',
-          machine: 'Constructor',
-          isAlternate: false,
-          inputs: [{ resource: 'Iron Ingot', amount: 30 }],
-          outputs: [{ resource: 'Iron Plate', amount: 20 }],
-          powerConsumption: 4
-        },
-        {
-          id: 'iron-rod',
-          name: 'Iron Rod',
-          machine: 'Constructor',
-          isAlternate: false,
-          inputs: [{ resource: 'Iron Ingot', amount: 15 }],
-          outputs: [{ resource: 'Iron Rod', amount: 15 }],
-          powerConsumption: 4
-        }
-      ];
+      recipes.value = [];
     }
   };
 

@@ -6,44 +6,13 @@ const locations = ref<Location[]>([]);
 const activeLocationId = ref<string | null>(null);
 
 export function useLocations() {
-  const { loadLocations, autoSave } = useStorage();
+  const { loadLocations, autoSave, exportData, importData } = useStorage();
 
   // Initialize on first use
   if (locations.value.length === 0) {
     const loadedLocations = loadLocations();
-
-    // If no locations in storage, create sample data
-    if (loadedLocations.length === 0) {
-      locations.value = [
-        {
-          id: 'loc-sample-1',
-          name: 'Iron Smelting Complex',
-          productionLines: [
-            {
-              id: 'line-1',
-              recipeId: 'iron-ingot',
-              machineCount: 4,
-              overclocking: [
-                { count: 4, percentage: 100 }
-              ]
-            },
-            {
-              id: 'line-2',
-              recipeId: 'iron-plate',
-              machineCount: 2,
-              overclocking: [
-                { count: 2, percentage: 100 }
-              ]
-            }
-          ]
-        }
-      ];
-      activeLocationId.value = 'loc-sample-1';
-    } else {
-      locations.value = loadedLocations;
-      activeLocationId.value = loadedLocations[0]?.id || null;
-    }
-
+    locations.value = loadedLocations;
+    activeLocationId.value = loadedLocations[0]?.id || null;
     autoSave(locations);
   }
 
@@ -109,6 +78,20 @@ export function useLocations() {
     }
   };
 
+  const handleExport = () => {
+    exportData(locations.value);
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      const importedLocations = await importData(file);
+      locations.value = importedLocations;
+      activeLocationId.value = importedLocations[0]?.id || null;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     locations,
     activeLocationId,
@@ -118,6 +101,8 @@ export function useLocations() {
     deleteLocation,
     addProductionLine,
     updateProductionLine,
-    deleteProductionLine
+    deleteProductionLine,
+    handleExport,
+    handleImport
   };
 }
