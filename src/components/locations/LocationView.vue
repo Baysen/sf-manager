@@ -8,7 +8,7 @@ import ResourceSummary from './ResourceSummary.vue';
 import PowerSummary from './PowerSummary.vue';
 
 const { activeLocation, deleteProductionLine } = useLocations();
-const { recipes, getRecipeById } = useRecipes();
+const { allRecipes, getRecipeById } = useRecipes();
 const { calculateResourceBalances, calculatePowerBreakdown } = useCalculations();
 
 // Filter production lines to only show those with valid recipes
@@ -19,12 +19,12 @@ const validProductionLines = computed(() => {
 
 const resourceBalances = computed(() => {
   if (!activeLocation.value) return [];
-  return calculateResourceBalances(activeLocation.value.productionLines, recipes.value);
+  return calculateResourceBalances(activeLocation.value.productionLines, allRecipes.value);
 });
 
 const powerBreakdown = computed(() => {
   if (!activeLocation.value) return [];
-  return calculatePowerBreakdown(activeLocation.value.productionLines, recipes.value);
+  return calculatePowerBreakdown(activeLocation.value.productionLines, allRecipes.value);
 });
 
 const handleEdit = (lineId: string) => {
