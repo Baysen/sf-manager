@@ -11,7 +11,15 @@ export function useStorage() {
 
   const loadLocations = (): Location[] => {
     const data = localStorage.getItem(LOCATIONS_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+
+    const locations = JSON.parse(data) as Location[];
+
+    // Migrate old data: ensure all locations have resourceExtractionLines
+    return locations.map(location => ({
+      ...location,
+      resourceExtractionLines: location.resourceExtractionLines || []
+    }));
   };
 
   const autoSave = (locationsRef: Ref<Location[]>) => {

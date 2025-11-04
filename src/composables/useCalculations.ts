@@ -1,7 +1,39 @@
 import type { Recipe } from '../types/recipe';
-import type { ProductionLine, ResourceBalance, PowerBreakdown } from '../types/location';
+import type { ProductionLine, ResourceBalance, PowerBreakdown, ResourceExtractionLine } from '../types/location';
+import { useMiners, PURITY_MULTIPLIERS, type Miner } from './useMiners';
 
 export function useCalculations() {
+  const { getMinerByKeyName, getResourceByKeyName } = useMiners();
+
+  const calculateExtractionRate = (
+    miner: Miner,
+    extractionLine: ResourceExtractionLine
+  ): number => {
+    const purityMultiplier = PURITY_MULTIPLIERS[extractionLine.purity];
+    let totalRate = 0;
+
+    for (const overclock of extractionLine.overclocking) {
+      const speedMultiplier = overclock.percentage / 100;
+      totalRate += miner.base_rate * purityMultiplier * overclock.count * speedMultiplier;
+    }
+
+    return totalRate;
+  };
+
+  const calculateExtractionPower = (
+    miner: Miner,
+    extractionLine: ResourceExtractionLine
+  ): number => {
+    let totalPower = 0;
+
+    for (const overclock of extractionLine.overclocking) {
+      const speedMultiplier = overclock.percentage / 100;
+      const powerMultiplier = Math.pow(speedMultiplier, 1.6);
+      totalPower += miner.power * overclock.count * powerMultiplier;
+    }
+
+    return totalPower;
+  };
   const calculateProductionRate = (
     recipe: Recipe,
     productionLine: ProductionLine,
@@ -35,10 +67,23 @@ export function useCalculations() {
 
   const calculateResourceBalances = (
     productionLines: ProductionLine[],
-    recipes: Recipe[]
+    recipes: Recipe[],
+    extractionLines: ResourceExtractionLine[] = []
   ): ResourceBalance[] => {
     const resourceMap = new Map<string, { production: number; consumption: number }>();
 
+    // Add resource extraction (production only)
+    for (const line of extractionLines) {
+      const miner = getMinerByKeyName(line.minerType);
+      const resource = getResourceByKeyName(line.resourceType);
+      if (!miner || !resource) continue;
+
+      const current = resourceMap.get(resource.name) || { production: 0, consumption: 0 };
+      current.production += calculateExtractionRate(miner, line);
+      resourceMap.set(resource.name, current);
+    }
+
+    // Add production lines
     for (const line of productionLines) {
       const recipe = recipes.find(r => r.id === line.recipeId);
       if (!recipe) continue;
@@ -77,10 +122,22 @@ export function useCalculations() {
 
   const calculatePowerBreakdown = (
     productionLines: ProductionLine[],
-    recipes: Recipe[]
+    recipes: Recipe[],
+    extractionLines: ResourceExtractionLine[] = []
   ): PowerBreakdown[] => {
     const powerMap = new Map<string, number>();
 
+    // Add extraction line power
+    for (const line of extractionLines) {
+      const miner = getMinerByKeyName(line.minerType);
+      if (!miner) continue;
+
+      const power = calculateExtractionPower(miner, line);
+      const current = powerMap.get(miner.name) || 0;
+      powerMap.set(miner.name, current + power);
+    }
+
+    // Add production line power
     for (const line of productionLines) {
       const recipe = recipes.find(r => r.id === line.recipeId);
       if (!recipe) continue;
@@ -99,6 +156,8 @@ export function useCalculations() {
   return {
     calculateProductionRate,
     calculatePowerConsumption,
+    calculateExtractionRate,
+    calculateExtractionPower,
     calculateResourceBalances,
     calculatePowerBreakdown
   };

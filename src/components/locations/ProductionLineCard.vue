@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { ProductionLine } from '../../types/location';
 import type { Recipe } from '../../types/recipe';
+import { useCalculations } from '../../composables/useCalculations';
 
-defineProps<{
+const props = defineProps<{
   productionLine: ProductionLine;
   recipe: Recipe;
 }>();
@@ -12,8 +13,18 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
+const { calculateProductionRate, calculatePowerConsumption } = useCalculations();
+
 const getTotalMachines = (line: ProductionLine) => {
   return line.overclocking.reduce((sum, config) => sum + config.count, 0);
+};
+
+const getCalculatedRate = (resourceName: string, isInput: boolean) => {
+  return calculateProductionRate(props.recipe, props.productionLine, resourceName, isInput);
+};
+
+const getTotalPower = () => {
+  return calculatePowerConsumption(props.recipe, props.productionLine);
 };
 </script>
 
@@ -64,7 +75,7 @@ const getTotalMachines = (line: ProductionLine) => {
         <div class="space-y-1">
           <div v-for="input in recipe.inputs" :key="input.resource" class="text-sm">
             <span class="text-white">{{ input.resource }}:</span>
-            <span class="text-red-400 ml-1">{{ input.amount }}/min</span>
+            <span class="text-red-400 ml-1">{{ getCalculatedRate(input.resource, true).toFixed(2) }}/min</span>
           </div>
         </div>
       </div>
@@ -73,9 +84,16 @@ const getTotalMachines = (line: ProductionLine) => {
         <div class="space-y-1">
           <div v-for="output in recipe.outputs" :key="output.resource" class="text-sm">
             <span class="text-white">{{ output.resource }}:</span>
-            <span class="text-green-400 ml-1">{{ output.amount }}/min</span>
+            <span class="text-green-400 ml-1">{{ getCalculatedRate(output.resource, false).toFixed(2) }}/min</span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-gray-700 mt-3">
+      <div class="text-sm">
+        <span class="text-gray-400">Total Power:</span>
+        <span class="text-yellow-400 ml-2 font-medium">{{ getTotalPower().toFixed(2) }} MW</span>
       </div>
     </div>
   </div>
