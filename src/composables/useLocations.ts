@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { Location, ProductionLine, ResourceExtractionLine } from '../types/location';
+import type { Location, ProductionLine, ResourceExtractionLine, ResourceExport } from '../types/location';
 import { useStorage } from './useStorage';
 
 const locations = ref<Location[]>([]);
@@ -25,7 +25,8 @@ export function useLocations() {
       id: `loc-${Date.now()}`,
       name,
       resourceExtractionLines: [],
-      productionLines: []
+      productionLines: [],
+      exports: []
     };
     locations.value.push(newLocation);
     activeLocationId.value = newLocation.id;
@@ -110,6 +111,37 @@ export function useLocations() {
     }
   };
 
+  const addResourceExport = (locationId: string, resourceExport: Omit<ResourceExport, 'id'>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const newExport: ResourceExport = {
+        ...resourceExport,
+        id: `export-${Date.now()}`
+      };
+      location.exports.push(newExport);
+    }
+  };
+
+  const updateResourceExport = (locationId: string, exportId: string, updates: Partial<Omit<ResourceExport, 'id'>>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const resourceExport = location.exports.find(e => e.id === exportId);
+      if (resourceExport) {
+        Object.assign(resourceExport, updates);
+      }
+    }
+  };
+
+  const deleteResourceExport = (locationId: string, exportId: string) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const index = location.exports.findIndex(e => e.id === exportId);
+      if (index !== -1) {
+        location.exports.splice(index, 1);
+      }
+    }
+  };
+
   const handleExport = () => {
     exportData(locations.value);
   };
@@ -137,6 +169,9 @@ export function useLocations() {
     addResourceExtractionLine,
     updateResourceExtractionLine,
     deleteResourceExtractionLine,
+    addResourceExport,
+    updateResourceExport,
+    deleteResourceExport,
     handleExport,
     handleImport
   };

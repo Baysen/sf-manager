@@ -19,17 +19,40 @@ export interface ResourceExtractionLine {
   overclocking: OverclockingConfig[];
 }
 
+export interface ResourceExport {
+  id: string;
+  resource: string;
+  toLocationId: string;
+  mode: 'percentage' | 'absolute';
+  value: number; // percentage 0-100 or absolute amount per minute
+}
+
 export interface Location {
   id: string;
   name: string;
   resourceExtractionLines: ResourceExtractionLine[];
   productionLines: ProductionLine[];
+  exports: ResourceExport[];
+}
+
+export interface ImportDetail {
+  fromLocationId: string;
+  fromLocationName: string;
+  amount: number;
+}
+
+export interface ExportDetail {
+  toLocationId: string;
+  toLocationName: string;
+  amount: number;
 }
 
 export interface ResourceBalance {
   resource: string;
   production: number;
   consumption: number;
+  imports: ImportDetail[];
+  exports: ExportDetail[];
   balance: number;
   status: 'surplus' | 'balanced' | 'deficit';
 }
