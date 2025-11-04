@@ -50,7 +50,9 @@ export function getIconPath(resourceName: string): string | null {
   }
 
   // Convert display name to filename (e.g., "Iron Ore" -> "Iron Ore.png")
-  return `/icons/${displayName}.png`;
+  // Use import.meta.env.BASE_URL to handle GitHub Pages subdirectory
+  const basePath = import.meta.env.BASE_URL || '/';
+  return `${basePath}icons/${displayName}.png`;
 }
 
 /**
