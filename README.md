@@ -44,7 +44,7 @@ A web application to track and manage multiple factory locations in Satisfactory
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/sf-manager.git
+   git clone https://github.com/Baysen/sf-manager.git
    cd sf-manager
    ```
 
