@@ -29,9 +29,22 @@ const availableLocations = computed(() => {
   return locations.value.filter(loc => loc.id !== activeLocation.value?.id);
 });
 
-// Filter resources to only show surplus resources
+// Filter resources to show surplus resources, or the currently selected resource when editing
 const surplusResources = computed(() => {
-  return props.availableResources.filter(balance => balance.status === 'surplus');
+  const surplusOnly = props.availableResources.filter(balance => balance.status === 'surplus');
+
+  // If editing and the current resource is not in the surplus list, add it
+  if (props.resourceExport && formData.value.resource) {
+    const hasCurrentResource = surplusOnly.some(b => b.resource === formData.value.resource);
+    if (!hasCurrentResource) {
+      const currentResource = props.availableResources.find(b => b.resource === formData.value.resource);
+      if (currentResource) {
+        return [...surplusOnly, currentResource];
+      }
+    }
+  }
+
+  return surplusOnly;
 });
 
 // Calculate preview amount
