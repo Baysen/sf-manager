@@ -2,6 +2,7 @@
 import type { ProductionLine } from '../../types/location';
 import type { Recipe } from '../../types/recipe';
 import { useCalculations } from '../../composables/useCalculations';
+import ResourceIcon from '../common/ResourceIcon.vue';
 
 const props = defineProps<{
   productionLine: ProductionLine;
@@ -57,24 +58,28 @@ const getTotalPower = () => {
       </div>
     </div>
 
-    <div class="flex items-center justify-between text-xs pt-2 border-t border-gray-700">
-      <div class="flex-1">
-        <span class="text-gray-400">In:</span>
-        <span v-for="(input, index) in recipe.inputs" :key="input.resource">
-          <span v-if="index > 0" class="text-gray-600">, </span>
-          <span class="text-white">{{ input.resource }}</span> <span class="text-red-400">{{ getCalculatedRate(input.resource, true).toFixed(1) }}/min</span>
-        </span>
+    <div class="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-gray-700">
+      <div>
+        <div class="text-gray-400 mb-1">In:</div>
+        <div class="space-y-0.5">
+          <div v-for="input in recipe.inputs" :key="input.resource" class="flex items-center gap-1">
+            <ResourceIcon :resource-key="input.resource" size="sm" />
+            <span class="text-red-400">{{ getCalculatedRate(input.resource, true).toFixed(1) }}/min</span>
+          </div>
+        </div>
       </div>
-      <div class="flex-1 text-center">
-        <span class="text-gray-400">Out:</span>
-        <span v-for="(output, index) in recipe.outputs" :key="output.resource">
-          <span v-if="index > 0" class="text-gray-600">, </span>
-          <span class="text-white">{{ output.resource }}</span> <span class="text-green-400">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
-        </span>
+      <div>
+        <div class="text-gray-400 mb-1">Out:</div>
+        <div class="space-y-0.5">
+          <div v-for="output in recipe.outputs" :key="output.resource" class="flex items-center gap-1">
+            <ResourceIcon :resource-key="output.resource" size="sm" />
+            <span class="text-green-400">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
+          </div>
+        </div>
       </div>
-      <div class="flex-1 text-right">
-        <span class="text-gray-400">Power:</span>
-        <span class="text-yellow-400 ml-1">{{ getTotalPower().toFixed(1) }} MW</span>
+      <div class="text-right">
+        <div class="text-gray-400 mb-1">Power:</div>
+        <span class="text-yellow-400">{{ getTotalPower().toFixed(1) }} MW</span>
       </div>
     </div>
   </div>

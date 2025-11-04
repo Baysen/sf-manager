@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ResourceBalance } from '../../types/location';
+import ResourceIcon from '../common/ResourceIcon.vue';
 
 defineProps<{
   balances: ResourceBalance[];
@@ -43,7 +44,10 @@ const formatRate = (rate: number) => {
         class="text-xs"
       >
         <div class="flex justify-between items-center mb-1">
-          <span class="font-medium text-white text-sm">{{ balance.resource }}</span>
+          <div class="flex items-center gap-2">
+            <ResourceIcon :resource-key="balance.resource" size="sm" />
+            <span class="font-medium text-white text-sm">{{ balance.resource }}</span>
+          </div>
           <span :class="['text-xs font-medium', getStatusColor(balance.status)]">
             {{ getStatusText(balance.status) }}
           </span>

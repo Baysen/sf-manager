@@ -72,11 +72,10 @@ const getPurityColor = (purity: string) => {
       </div>
     </div>
 
-    <div class="text-xs text-gray-400 mb-2">
-      <span v-for="(config, index) in extractionLine.overclocking" :key="index">
-        <span v-if="index > 0" class="text-gray-600"> • </span>
+    <div class="text-xs text-gray-400 mb-2 space-y-0.5">
+      <div v-for="(config, index) in extractionLine.overclocking" :key="index">
         <span class="text-white">{{ config.count }}</span> @ <span class="text-yellow-400">{{ config.percentage }}%</span>
-      </span>
+      </div>
     </div>
 
     <div class="flex items-center justify-between text-xs pt-2 border-t border-gray-700">

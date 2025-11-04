@@ -44,16 +44,43 @@ export function useStorage() {
     URL.revokeObjectURL(url);
   };
 
+  const validateImportData = (data: any): data is { version: string; locations: Location[] } => {
+    if (!data || typeof data !== 'object') return false;
+    if (!data.version || typeof data.version !== 'string') return false;
+    if (!Array.isArray(data.locations)) return false;
+
+    // Validate each location has required fields
+    return data.locations.every((loc: any) =>
+      loc &&
+      typeof loc === 'object' &&
+      typeof loc.id === 'string' &&
+      typeof loc.name === 'string' &&
+      Array.isArray(loc.productionLines) &&
+      Array.isArray(loc.resourceExtractionLines)
+    );
+  };
+
   const importData = async (file: File): Promise<Location[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target?.result as string);
-          // TODO: Add validation
-          resolve(data.locations || []);
+
+          if (!validateImportData(data)) {
+            reject(new Error('Invalid file format: Missing required fields'));
+            return;
+          }
+
+          // Migrate data if needed
+          const locations = data.locations.map(location => ({
+            ...location,
+            resourceExtractionLines: location.resourceExtractionLines || []
+          }));
+
+          resolve(locations);
         } catch (error) {
-          reject(new Error('Invalid file format'));
+          reject(new Error('Invalid JSON file'));
         }
       };
       reader.onerror = () => reject(new Error('Failed to read file'));
