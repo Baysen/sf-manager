@@ -17,4 +17,7 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  // Base path for GitHub Pages: https://username.github.io/repo-name/
+  // Change 'sf-manager' to your actual repo name if different
+  base: process.env.NODE_ENV === 'production' ? '/sf-manager/' : '/',
 })
