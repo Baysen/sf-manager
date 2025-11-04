@@ -32,9 +32,12 @@ const getTotalPower = () => {
 <template>
   <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors">
     <div class="flex justify-between items-start mb-2">
-      <div>
-        <h4 class="text-base font-semibold text-white">{{ recipe.name }}</h4>
-        <p class="text-xs text-gray-400">{{ recipe.machine }} • {{ getTotalMachines(productionLine) }} machines</p>
+      <div class="flex items-center gap-2">
+        <ResourceIcon v-if="recipe.outputs[0]" :resource-key="recipe.outputs[0].resource" size="md" />
+        <div>
+          <h4 class="text-base font-semibold text-white">{{ recipe.name }}</h4>
+          <p class="text-xs text-gray-400">{{ recipe.machine }} • {{ getTotalMachines(productionLine) }} machines</p>
+        </div>
       </div>
       <div class="flex space-x-2">
         <button

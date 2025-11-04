@@ -2,6 +2,7 @@
 import type { ResourceExtractionLine } from '../../types/location';
 import { useMiners, type Miner, type Resource } from '../../composables/useMiners';
 import { useCalculations } from '../../composables/useCalculations';
+import ResourceIcon from '../common/ResourceIcon.vue';
 
 const props = defineProps<{
   extractionLine: ResourceExtractionLine;
@@ -49,12 +50,15 @@ const getPurityColor = (purity: string) => {
 <template>
   <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors">
     <div class="flex justify-between items-start mb-2">
-      <div>
-        <h4 class="text-base font-semibold text-white">{{ resource.name }}</h4>
-        <p class="text-xs text-gray-400">
-          {{ miner.name }} • {{ getTotalMachines(extractionLine) }} machines •
-          <span :class="getPurityColor(extractionLine.purity)">{{ getPurityLabel(extractionLine.purity) }}</span>
-        </p>
+      <div class="flex items-center gap-2">
+        <ResourceIcon :resource-key="resource.key_name" size="md" />
+        <div>
+          <h4 class="text-base font-semibold text-white">{{ resource.name }}</h4>
+          <p class="text-xs text-gray-400">
+            {{ miner.name }} • {{ getTotalMachines(extractionLine) }} machines •
+            <span :class="getPurityColor(extractionLine.purity)">{{ getPurityLabel(extractionLine.purity) }}</span>
+          </p>
+        </div>
       </div>
       <div class="flex space-x-2">
         <button
