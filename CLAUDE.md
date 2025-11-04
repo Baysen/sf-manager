@@ -40,20 +40,29 @@ A web application to track and manage multiple factory locations in Satisfactory
 ## Core Features
 
 ### MVP (Phase 1)
-1. Recipe management system with all Satisfactory recipes
-2. Multi-location factory tracking
-3. Production line management per location
-4. Resource balance calculations per location
-5. Overclocking support
-6. Power consumption tracking
-7. Local storage persistence
-8. JSON export/import functionality
+1. Recipe management system with all Satisfactory recipes ✅
+2. Multi-location factory tracking ✅
+3. Production line management per location ✅
+4. Resource balance calculations per location ✅
+5. Overclocking support ✅
+6. Power consumption tracking ✅
+7. Local storage persistence ✅
+8. JSON export/import functionality ✅
+9. Icons for all resources ✅
 
 ### Post-MVP (Phase 2)
+- Overview page summarizing all locations
 - Resource flow tracking between locations
+- Suggestions for optimizations
+  - If all required resources of a production line are in surplus big enough to warrant extra machines, calculate the possible maximum it could handle and visually suggest adding them with "ghost entries"
 - Somersloop production multiplier support
 - Recipe categorization by tier
-- Recipe categorization by type (ore drilling, smelting, etc.)
+
+### Post-MVP (Phase 3)
+- Suggest simple optimizations that could make use of small surpluses (like having 15 iron ore surplus, suggest overclocking one machine to 150%). This is only for small corrections
+- If a resource of a production line is in deficit, suggest improvements depending on:
+  - Is the resource extracted on the same location? -> Suggest more miners or overclocking if available
+  - Is the resource imported? -> Suggest improvements on the location where it comes from, making it clear the addition would be to satisfy an exported resource
 
 ## Data Structure
 

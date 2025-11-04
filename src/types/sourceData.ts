@@ -40,6 +40,13 @@ export interface SourceRecipe {
   power_range?: Array<number>; // optional for variable power recipes
 }
 
+export interface SourceResource {
+  key_name: string;
+  category: 'mineral' | 'oil' | 'water';
+  priority: number;
+  weight?: number;
+}
+
 export interface SourceData {
   belts: unknown[];
   pipes: unknown[];
@@ -47,5 +54,6 @@ export interface SourceData {
   miners: SourceMiner[];
   items: SourceItem[];
   fluids: SourceFluid[];
+  resources: SourceResource[];
   recipes: SourceRecipe[];
 }

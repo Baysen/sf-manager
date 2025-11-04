@@ -25,7 +25,10 @@ export const PURITY_MULTIPLIERS = {
   pure: 2.0
 } as const;
 
-const allMiners = ref<Miner[]>(data.miners);
+const allMiners = ref<Miner[]>(data.miners.map(miner => ({
+  ...miner,
+  category: miner.category as 'mineral' | 'oil' | 'water'
+})));
 
 // Create a map of resource key names to display names
 const resourceMap = new Map<string, string>();
@@ -54,20 +57,10 @@ export function useMiners() {
     return extractableResources.value.find(resource => resource.key_name === keyName);
   };
 
-  const getMinersForCategory = (category: 'mineral' | 'oil' | 'water'): Miner[] => {
-    return allMiners.value.filter(miner => miner.category === category);
-  };
-
-  const getResourcesForCategory = (category: 'mineral' | 'oil' | 'water'): Resource[] => {
-    return extractableResources.value.filter(resource => resource.category === category);
-  };
-
   return {
     allMiners,
     extractableResources,
     getMinerByKeyName,
-    getResourceByKeyName,
-    getMinersForCategory,
-    getResourcesForCategory
+    getResourceByKeyName
   };
 }

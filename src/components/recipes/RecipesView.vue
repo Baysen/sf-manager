@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRecipes } from '../../composables/useRecipes';
+import ResourceIcon from '../common/ResourceIcon.vue';
 
 const {
   filteredRecipes,
@@ -65,7 +66,7 @@ const {
       <div
         v-for="recipe in filteredRecipes"
         :key="recipe.id"
-        class="bg-gray-800 rounded-lg p-4 border border-gray-700"
+        class="bg-gray-800 rounded-lg p-3 border border-gray-700"
       >
         <div class="flex items-start justify-between mb-3">
           <h3 class="text-lg font-semibold text-white">{{ recipe.name }}</h3>
@@ -83,7 +84,8 @@ const {
           <div>
             <div class="text-xs text-gray-400 mb-1">Inputs</div>
             <div class="space-y-1">
-              <div v-for="input in recipe.inputs" :key="input.resource" class="text-sm">
+              <div v-for="input in recipe.inputs" :key="input.resource" class="text-sm flex items-center gap-2">
+                <ResourceIcon :resource-key="input.resource" size="sm" />
                 <span class="text-white">{{ input.resource }}:</span>
                 <span class="text-red-400 ml-1">{{ input.amount }}/min</span>
               </div>
@@ -93,7 +95,8 @@ const {
           <div>
             <div class="text-xs text-gray-400 mb-1">Outputs</div>
             <div class="space-y-1">
-              <div v-for="output in recipe.outputs" :key="output.resource" class="text-sm">
+              <div v-for="output in recipe.outputs" :key="output.resource" class="text-sm flex items-center gap-2">
+                <ResourceIcon :resource-key="output.resource" size="sm" />
                 <span class="text-white">{{ output.resource }}:</span>
                 <span class="text-green-400 ml-1">{{ output.amount }}/min</span>
               </div>

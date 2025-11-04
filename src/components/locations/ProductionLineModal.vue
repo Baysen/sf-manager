@@ -2,6 +2,7 @@
 import { ref, watch, computed, nextTick } from 'vue';
 import type { ProductionLine, OverclockingConfig } from '../../types/location';
 import { useRecipes } from '../../composables/useRecipes';
+import ResourceIcon from '../common/ResourceIcon.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -162,16 +163,20 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
               <div>
                 <div class="text-xs text-gray-400 mb-2">Inputs</div>
                 <div class="space-y-1">
-                  <div v-for="input in selectedRecipe.inputs" :key="input.resource" class="text-sm text-white">
-                    {{ input.resource }}: <span class="text-red-400">{{ input.amount }}/min</span>
+                  <div v-for="input in selectedRecipe.inputs" :key="input.resource" class="text-sm text-white flex items-center gap-2">
+                    <ResourceIcon :resource-key="input.resource" size="sm" />
+                    <span>{{ input.resource }}:</span>
+                    <span class="text-red-400">{{ input.amount }}/min</span>
                   </div>
                 </div>
               </div>
               <div>
                 <div class="text-xs text-gray-400 mb-2">Outputs</div>
                 <div class="space-y-1">
-                  <div v-for="output in selectedRecipe.outputs" :key="output.resource" class="text-sm text-white">
-                    {{ output.resource }}: <span class="text-green-400">{{ output.amount }}/min</span>
+                  <div v-for="output in selectedRecipe.outputs" :key="output.resource" class="text-sm text-white flex items-center gap-2">
+                    <ResourceIcon :resource-key="output.resource" size="sm" />
+                    <span>{{ output.resource }}:</span>
+                    <span class="text-green-400">{{ output.amount }}/min</span>
                   </div>
                 </div>
               </div>
