@@ -42,7 +42,16 @@ const previewAmount = computed(() => {
   if (!balance) return 0;
 
   const totalImports = balance.imports.reduce((sum, imp) => sum + imp.amount, 0);
-  const totalExports = balance.exports.reduce((sum, exp) => sum + exp.amount, 0);
+
+  // Exclude the current export being edited from total exports
+  const totalExports = balance.exports.reduce((sum, exp) => {
+    // If editing, exclude this export's current amount
+    if (props.resourceExport && exp.toLocationId === props.resourceExport.toLocationId) {
+      return sum;
+    }
+    return sum + exp.amount;
+  }, 0);
+
   const availableSurplus = balance.production + totalImports - balance.consumption - totalExports;
 
   if (formData.value.mode === 'percentage') {
@@ -92,7 +101,16 @@ const validationMessages = computed(() => {
     const balance = props.availableResources.find(b => b.resource === formData.value.resource);
     if (balance) {
       const totalImports = balance.imports.reduce((sum, imp) => sum + imp.amount, 0);
-      const totalExports = balance.exports.reduce((sum, exp) => sum + exp.amount, 0);
+
+      // Exclude the current export being edited from total exports
+      const totalExports = balance.exports.reduce((sum, exp) => {
+        // If editing, exclude this export's current amount
+        if (props.resourceExport && exp.toLocationId === props.resourceExport.toLocationId) {
+          return sum;
+        }
+        return sum + exp.amount;
+      }, 0);
+
       const availableSurplus = balance.production + totalImports - balance.consumption - totalExports;
 
       if (formData.value.value > availableSurplus) {
