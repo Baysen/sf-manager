@@ -24,43 +24,43 @@ const getStatusText = (status: string) => {
 };
 
 const formatRate = (rate: number) => {
-  return rate.toFixed(2);
+  return rate.toFixed(1);
 };
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-    <h3 class="text-lg font-semibold text-white mb-4">Resource Summary</h3>
+  <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
+    <h3 class="text-base font-semibold text-white mb-3">Resource Summary</h3>
 
-    <div v-if="balances.length === 0" class="text-gray-400 text-sm">
+    <div v-if="balances.length === 0" class="text-gray-400 text-xs">
       No production lines yet
     </div>
 
-    <div v-else class="space-y-3">
+    <div v-else class="space-y-2">
       <div
         v-for="balance in balances"
         :key="balance.resource"
-        class="border-b border-gray-700 pb-3 last:border-b-0 last:pb-0"
+        class="text-xs"
       >
-        <div class="flex justify-between items-start mb-2">
-          <span class="font-medium text-white">{{ balance.resource }}</span>
-          <span :class="['text-sm font-semibold', getStatusColor(balance.status)]">
+        <div class="flex justify-between items-center mb-1">
+          <span class="font-medium text-white text-sm">{{ balance.resource }}</span>
+          <span :class="['text-xs font-medium', getStatusColor(balance.status)]">
             {{ getStatusText(balance.status) }}
           </span>
         </div>
-        <div class="space-y-1 text-sm">
-          <div class="flex justify-between text-gray-300">
-            <span>Production:</span>
-            <span class="text-green-400">+{{ formatRate(balance.production) }}/min</span>
+        <div class="flex items-center justify-between text-gray-300 pl-1">
+          <div class="flex-1">
+            <span class="text-gray-400">In:</span>
+            <span class="text-green-400 ml-1">+{{ formatRate(balance.production) }}</span>
           </div>
-          <div class="flex justify-between text-gray-300">
-            <span>Consumption:</span>
-            <span class="text-red-400">-{{ formatRate(balance.consumption) }}/min</span>
+          <div class="flex-1 text-center">
+            <span class="text-gray-400">Out:</span>
+            <span class="text-red-400 ml-1">-{{ formatRate(balance.consumption) }}</span>
           </div>
-          <div class="flex justify-between font-medium">
-            <span class="text-white">Balance:</span>
-            <span :class="getStatusColor(balance.status)">
-              {{ balance.balance >= 0 ? '+' : '' }}{{ formatRate(balance.balance) }}/min
+          <div class="flex-1 text-right">
+            <span class="text-gray-400">Net:</span>
+            <span :class="['ml-1 font-medium', getStatusColor(balance.status)]">
+              {{ balance.balance >= 0 ? '+' : '' }}{{ formatRate(balance.balance) }}
             </span>
           </div>
         </div>
