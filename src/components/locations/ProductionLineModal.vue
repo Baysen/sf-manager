@@ -138,6 +138,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
               "searchPlaceholder": "Search recipes...",
               "toggleTag": "<button type=\"button\" aria-expanded=\"false\"></button>",
               "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-3 ps-4 pe-9 flex gap-x-2 text-nowrap w-full cursor-pointer bg-gray-900 border border-gray-700 rounded-lg text-start text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+              "dropdownScope": "window",
               "dropdownClasses": "mt-2 z-[60] w-full max-h-72 p-1 space-y-0.5 bg-gray-900 border border-gray-700 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-800 [&::-webkit-scrollbar-thumb]:bg-gray-600",
               "optionClasses": "py-2 px-4 w-full text-sm text-white cursor-pointer hover:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-800",
               "optionTemplate": "<div class=\"flex justify-between items-center w-full\"><span data-title></span><span class=\"hidden hs-selected:block\"><svg class=\"shrink-0 size-3.5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div>",
