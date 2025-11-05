@@ -6,9 +6,8 @@ A web application to track and manage multiple factory locations in Satisfactory
 ## Tech Stack
 - **Frontend Framework**: Vue.js 3.5.13 (Composition API with `<script setup>`)
 - **Build Tool**: Vite
-- **UI Library**: Preline UI v3.2.1
+- **UI Library**: shadcn-vue (built with Reka UI and Tailwind CSS)
 - **CSS Framework**: Tailwind CSS v4.0 (via @tailwindcss/vite plugin)
-- **Additional Plugin**: @tailwindcss/forms (required by Preline UI)
 - **Data Persistence**: LocalStorage with JSON export/import functionality
 - **Language**: TypeScript
 
@@ -28,33 +27,34 @@ A web application to track and manage multiple factory locations in Satisfactory
 2. **MUST** use TypeScript for all component logic
 3. **DO NOT** use Options API unless absolutely necessary
 
-#### Preline UI Requirements:
-1. **MUST** import `preline/variants.css` in CSS: `@import 'preline/variants.css';`
-2. **MUST** use `@source` directive to include Preline JS: `@source '../../node_modules/preline/dist/*.js';`
-3. **MUST** import `'preline/preline'` in main.ts for TypeScript support
-4. **MUST** initialize with `window.HSStaticMethods.autoInit()` after route changes
-5. **MUST** reference official Preline UI documentation for component markup
+#### shadcn-vue Requirements:
+1. **MUST** use Tailwind CSS v4.0 (see dedicated docs: https://www.shadcn-vue.com/docs/tailwind-v4.html)
+2. **MUST** copy components into `src/components/ui/` directory using the shadcn-vue CLI
+3. **MUST** configure path aliases in `vite.config.ts` and `tsconfig.json` (typically `@/` → `./src/`)
+4. **MUST** reference official shadcn-vue documentation for component implementation
+5. **DO NOT** install shadcn-vue as an npm package - it's a CLI tool that copies components into your project
+6. **Embrace shadcn-vue patterns** - don't force old UI patterns, use shadcn-vue's recommended approach
 
 **When in doubt, ALWAYS check the official documentation for the current version before writing code.**
 
 ## Core Features
 
-### MVP (Phase 1)
-1. Recipe management system with all Satisfactory recipes ✅
-2. Multi-location factory tracking ✅
-3. Production line management per location ✅
-4. Resource balance calculations per location ✅
-5. Overclocking support ✅
-6. Power consumption tracking ✅
-7. Local storage persistence ✅
-8. JSON export/import functionality ✅
-9. Icons for all resources ✅
+### MVP (Phase 1) - Currently Reimplementing with shadcn-vue
+1. Recipe management system with all Satisfactory recipes
+2. Multi-location factory tracking
+3. Production line management per location
+4. Resource balance calculations per location
+5. Overclocking support
+6. Power consumption tracking
+7. Local storage persistence
+8. JSON export/import functionality
+9. Icons for all resources
 
-### Post-MVP (Phase 2)
-- Resource flow tracking between locations ✅
-- Alphabetical sorting of all lists ✅
-- Better visualization of alternate recipes in dropdowns ✅
-- Split resource and recipe selection into separate dropdowns for easier use ✅
+### Post-MVP (Phase 2) - Will need reimplementation after Phase 1
+- Resource flow tracking between locations
+- Alphabetical sorting of all lists
+- Better visualization of alternate recipes in dropdowns
+- Split resource and recipe selection into separate dropdowns for easier use
 - Ability to drag and drop sort lists
 - Add power creation machines
 - Limit resource extraction machines to the resources they can actually extract
@@ -461,10 +461,112 @@ On each location, imports are displayed in the Resource Summary but cannot be di
 - Use TypeScript for type safety
 - Component structure should be modular and reusable
 - Responsive design (mobile-friendly)
-- **Design System**: Use Preline UI's **dark mode** as the default theme
-- **Component Usage**: Stick to Preline's ready-made components as much as possible
-- Always reference Preline UI documentation for component implementation
+- **Design System**: Use shadcn-vue's default theme with dark mode
+- **Component Usage**: Use shadcn-vue components and blocks as the foundation
+- Always reference shadcn-vue documentation for component implementation
 - Tailwind CSS v4.0 for utility styling
+
+## Preline UI → shadcn-vue Migration
+
+### Migration Rationale
+Preline UI, while functional, was designed for vanilla JavaScript and caused significant friction with Vue 3's reactivity system. Key issues included:
+- Manual lifecycle management with `window.HSStaticMethods.autoInit()`
+- Complex component initialization/destruction patterns (especially with Select dropdowns)
+- Fighting against Vue's reactive data flow
+- Not designed for Vue's component lifecycle
+
+**shadcn-vue** solves these problems by:
+- Built specifically for Vue 3 with proper lifecycle management
+- Copy-paste components you own and can modify
+- Full Tailwind CSS v4 support
+- Beautiful, accessible components out of the box
+- Official documentation and examples for Vue patterns
+
+### Migration Plan
+
+#### Phase 1: Setup & Configuration
+1. **Install shadcn-vue CLI** with Tailwind v4 support
+   - Use official Tailwind v4 setup guide: https://www.shadcn-vue.com/docs/tailwind-v4.html
+   - Configure path aliases (`@/` → `./src/`)
+   - Set up CSS variables for theming
+
+2. **Update theme configuration**
+   - Port existing color scheme to shadcn-vue's CSS variable system
+   - Configure dark mode (default)
+   - Add necessary CSS imports
+
+#### Phase 2: New Navigation Architecture
+3. **Implement Sidebar navigation** (replacing top tabs + location tabs)
+   - Use shadcn-vue Sidebar component (collapsible to icons)
+   - Add sidebar block for layout structure
+   - Navigation structure:
+     - Top level: Locations list, Recipes view
+     - Second level: Individual locations (when Locations is active)
+   - Benefits over old tab system:
+     - Scales better with many locations
+     - Mobile-responsive (drawer on mobile)
+     - More professional appearance
+     - Collapsible to save screen space
+
+#### Phase 3: Component Migration
+4. **Replace Preline Select components**
+   - ProductionLineModal.vue: Use shadcn-vue Select or Combobox
+   - ResourceExtractionModal.vue: Use shadcn-vue Select or Combobox
+   - Remove all `data-hs-select` attributes and initialization logic
+   - Remove all `window.HSStaticMethods` calls
+
+5. **Migrate modal components**
+   - Wrap all modals with shadcn-vue Dialog component
+   - Use Dialog's built-in overlay, close handling, accessibility
+
+6. **Replace custom UI elements with shadcn-vue components**
+   - Buttons → shadcn-vue Button component
+   - Inputs → shadcn-vue Input component
+   - Cards → shadcn-vue Card component
+   - Badges → shadcn-vue Badge component
+
+#### Phase 4: Cleanup
+7. **Remove Preline dependencies**
+   - Remove `preline` from package.json
+   - Remove `@tailwindcss/forms` (if no longer needed)
+   - Remove `@floating-ui/dom` and `@floating-ui/vue` (if only used by Preline)
+   - Remove Preline CSS imports from stylesheets
+   - Remove Preline import from main.ts
+
+8. **Test and validate**
+   - Test all modals and forms
+   - Test location navigation
+   - Test data persistence
+   - Test export/import functionality
+   - Verify mobile responsiveness
+
+### Component Mapping
+
+| Old (Preline/Custom) | New (shadcn-vue) | Notes |
+|----------------------|------------------|-------|
+| Preline Select (with search) | Select or Combobox | Use Combobox for searchable dropdowns |
+| Custom modals | Dialog | Built-in overlay, accessibility, animations |
+| Custom buttons | Button | Multiple variants (default, outline, ghost, etc.) |
+| Custom inputs | Input | Consistent styling, built-in validation states |
+| Custom cards | Card | CardHeader, CardContent, CardFooter subcomponents |
+| Custom badges | Badge | Multiple variants for different states |
+| Top navigation + tabs | Sidebar | Collapsible, mobile-responsive, scalable |
+
+### Key Principles for Migration
+- **Start fresh with shadcn-vue patterns** - don't force old UI/UX into new components
+- **Use shadcn-vue blocks** - leverage pre-built layouts (especially Sidebar blocks)
+- **Copy and customize** - shadcn-vue components are in your codebase, modify as needed
+- **Follow official examples** - shadcn-vue docs show best practices for Vue 3
+
+### Expected Improvements
+- ✅ No more manual component initialization
+- ✅ No more fighting with Vue reactivity
+- ✅ Better scalability (sidebar navigation handles many locations)
+- ✅ Improved mobile experience
+- ✅ More professional, modern UI
+- ✅ Full control over component code
+- ✅ Better TypeScript support
+- ✅ Easier maintenance and debugging
 
 ## File Structure Suggestion
 ```
