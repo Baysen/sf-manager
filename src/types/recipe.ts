@@ -6,6 +6,7 @@ export interface RecipeResource {
 export interface Recipe {
   id: string;
   name: string;
+  baseName?: string; // For alternate recipes, the primary output resource name
   machine: string;
   isAlternate: boolean;
   inputs: RecipeResource[];

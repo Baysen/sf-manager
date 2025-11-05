@@ -36,13 +36,20 @@ const getTotalPower = () => {
         <ResourceIcon v-if="recipe.outputs[0]" :resource-key="recipe.outputs[0].resource" size="md" />
         <div>
           <div class="flex items-start justify-between gap-2">
-          <h4 class="text-base font-semibold text-white">{{ recipe.name }}</h4>
+            <h4 class="text-base font-semibold text-white">
+              <template v-if="recipe.isAlternate && recipe.baseName">
+                {{ recipe.baseName }} <span class="text-gray-400">({{ recipe.name }})</span>
+              </template>
+              <template v-else>
+                {{ recipe.name }}
+              </template>
+            </h4>
             <span
-            v-if="recipe.isAlternate"
-            class="px-1 py-1 text-xs font-medium bg-purple-600 text-white rounded"
-          >
-            ALT
-          </span>
+              v-if="recipe.isAlternate"
+              class="px-1 py-1 text-xs font-medium bg-purple-600 text-white rounded"
+            >
+              ALT
+            </span>
           </div>
           <p class="text-xs text-gray-400">{{ recipe.machine }} • {{ getTotalMachines(productionLine) }} machines</p>
         </div>
