@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import AppNavigation from './components/common/AppNavigation.vue';
 import LocationTabs from './components/locations/LocationTabs.vue';
 import LocationView from './components/locations/LocationView.vue';
@@ -20,6 +20,16 @@ const handleSelectLocation = (id: string) => {
 const handleAddLocation = (name: string) => {
   addLocation(name);
 };
+
+// Preline reinitialization helper
+// This ensures Preline components initialize properly after Vue renders them
+onMounted(() => {
+  setTimeout(() => {
+    if (window.HSStaticMethods) {
+      window.HSStaticMethods.autoInit();
+    }
+  }, 100);
+});
 </script>
 
 <template>
