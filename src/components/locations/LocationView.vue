@@ -13,6 +13,9 @@ import ResourceExportCard from './ResourceExportCard.vue';
 import ResourceExportModal from './ResourceExportModal.vue';
 import ResourceSummary from './ResourceSummary.vue';
 import PowerSummary from './PowerSummary.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus } from 'lucide-vue-next';
 
 const { locations, activeLocation, addProductionLine, updateProductionLine, deleteProductionLine, addResourceExtractionLine, updateResourceExtractionLine, deleteResourceExtractionLine, addResourceExport, updateResourceExport, deleteResourceExport } = useLocations();
 const { allRecipes, getRecipeById } = useRecipes();
@@ -226,7 +229,7 @@ const getLocationName = (locationId: string): string => {
 
 <template>
   <div v-if="!activeLocation" class="flex items-center justify-center h-96">
-    <p class="text-gray-400">No location selected</p>
+    <p class="text-muted-foreground">No location selected</p>
   </div>
 
   <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
@@ -235,18 +238,18 @@ const getLocationName = (locationId: string): string => {
       <!-- Resource Extraction Section -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-white">Resource Extraction</h2>
-          <button
-            @click="handleAddExtraction"
-            class="px-4 py-2 text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            + Add Extraction Line
-          </button>
+          <h2 class="text-xl font-semibold">Resource Extraction</h2>
+          <Button @click="handleAddExtraction" size="sm">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Extraction Line
+          </Button>
         </div>
 
-        <div v-if="activeLocation.resourceExtractionLines.length === 0" class="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-          <p class="text-gray-400">No resource extraction lines yet. Add miners, oil extractors, or water extractors!</p>
-        </div>
+        <Card v-if="activeLocation.resourceExtractionLines.length === 0">
+          <CardContent class="p-8 text-center">
+            <p class="text-muted-foreground">No resource extraction lines yet. Add miners, oil extractors, or water extractors!</p>
+          </CardContent>
+        </Card>
 
         <div v-else class="space-y-4">
           <ResourceExtractionCard
@@ -264,18 +267,18 @@ const getLocationName = (locationId: string): string => {
       <!-- Production Lines Section -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-white">Production Lines</h2>
-          <button
-            @click="handleAddProductionLine"
-            class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            + Add Production Line
-          </button>
+          <h2 class="text-xl font-semibold">Production Lines</h2>
+          <Button @click="handleAddProductionLine" size="sm">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Production Line
+          </Button>
         </div>
 
-        <div v-if="activeLocation.productionLines.length === 0" class="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-          <p class="text-gray-400">No production lines yet. Add one to get started!</p>
-        </div>
+        <Card v-if="activeLocation.productionLines.length === 0">
+          <CardContent class="p-8 text-center">
+            <p class="text-muted-foreground">No production lines yet. Add one to get started!</p>
+          </CardContent>
+        </Card>
 
         <div v-else class="space-y-4">
           <ProductionLineCard
@@ -292,18 +295,18 @@ const getLocationName = (locationId: string): string => {
       <!-- Resource Exports Section -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold text-white">Resource Exports</h2>
-          <button
-            @click="handleAddExport"
-            class="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            + Add Export
-          </button>
+          <h2 class="text-xl font-semibold">Resource Exports</h2>
+          <Button @click="handleAddExport" size="sm" variant="secondary">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Export
+          </Button>
         </div>
 
-        <div v-if="activeLocation.exports.length === 0" class="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-          <p class="text-gray-400">No resource exports yet. Export surplus resources to other locations!</p>
-        </div>
+        <Card v-if="activeLocation.exports.length === 0">
+          <CardContent class="p-8 text-center">
+            <p class="text-muted-foreground">No resource exports yet. Export surplus resources to other locations!</p>
+          </CardContent>
+        </Card>
 
         <div v-else class="space-y-4">
           <ResourceExportCard

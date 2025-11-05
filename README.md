@@ -16,13 +16,15 @@ A web application to track and manage multiple factory locations in Satisfactory
   - Power consumption calculations with overclocking multipliers
 - **Data Persistence**: Auto-save to browser storage with JSON export/import for backups
 - **Visual Resource Icons**: Easy identification of all resources and machines
-- **Clean Dark Mode Interface**: Intuitive UI built with modern components
+- **Collapsible Sidebar Navigation**: Space-efficient navigation that scales with many locations
+- **Modern Dark Mode UI**: Built with shadcn-vue components and Tailwind CSS v4
 
 ### Planned Features (Phase 2)
 - **Power Generation Tracking**: Add generators and track net power balance
 - **Global Overview Dashboard**: See all locations and resource flows at a glance
-- **Collapsible Sections**: Minimize sections to focus on what matters
-- **Enhanced Location Management**: Better tools for organizing and managing locations
+- **Collapsible Sections**: Minimize production line and extraction sections
+- **Enhanced Location Management**: Edit, delete, and reorder locations
+- **Better Recipe Visualization**: Improved alternate recipe display in dropdowns
 
 ### Future Features (Phase 3+)
 - **Smart Production Suggestions**: Automated optimization recommendations based on current surplus/deficit
@@ -45,13 +47,12 @@ If you just want to get started, you can use the online version at [https://bays
 - npm
 
 ### Tech Stack
-- **Vue 3** (Composition API)
+- **Vue 3** (Composition API with `<script setup>`)
 - **TypeScript**
 - **Vite**
-- **Tailwind CSS v4**
-- **Preline UI**
-- **Pinia** (State Management)
-- **Vue Router**
+- **Tailwind CSS v4** (@tailwindcss/vite)
+- **shadcn-vue** (UI Components built on Reka UI)
+- **Lucide Icons** (lucide-vue-next)
 
 ### Installation
 
@@ -85,10 +86,11 @@ The built files will be in the `dist` directory.
 
 ### Managing Locations
 
-1. **Create a Location**: Click the "+ Add Location" button in the Locations tab
-2. **Add Resource Extraction**: Configure miners/extractors with purity counts and overclocking
-3. **Add Production Lines**: Select recipes, set machine counts, and configure overclocking
-4. **Export Resources**: Send surplus resources to other locations
+1. **Create a Location**: Click the "+ Add Location" button in the sidebar
+2. **Select a Location**: Click on a location in the sidebar to view and edit it
+3. **Add Resource Extraction**: Configure miners/extractors with purity counts and overclocking
+4. **Add Production Lines**: Select recipes, set machine counts, and configure overclocking
+5. **Export Resources**: Send surplus resources to other locations
 
 ### Resource Flow Between Locations
 
