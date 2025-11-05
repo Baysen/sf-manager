@@ -4,25 +4,35 @@ A web application to track and manage multiple factory locations in Satisfactory
 
 ## Features
 
-### Current Features (MVP Phase)
-- **Complete Recipe Database**: All Satisfactory recipes included
-- **Multi-Location Management**: Track multiple factory locations independently
-- **Production Lines**: Configure production lines with machine counts and overclocking
-- **Resource Extraction**: Track miners and extractors with purity levels and overclocking
-- **Resource Flow**: Export resources between locations with percentage or absolute amounts
-- **Real-Time Calculations**:
-  - Production and consumption rates per location
-  - Resource balance (surplus/deficit) with import/export tracking
-  - Power consumption with overclocking multipliers
-- **Data Persistence**: LocalStorage with JSON export/import functionality
-- **Resource Icons**: Visual icons for all Satisfactory resources
-- **Dark Mode UI**: Built with Preline UI components
+### Current Features
+- **Complete Recipe Database**: All Satisfactory recipes including alternate recipes
+- **Multi-Location Factory Management**: Track and organize multiple factory locations
+- **Production Line Planning**: Configure recipes, machine counts, and overclocking per location
+- **Resource Extraction Tracking**: Manage miners and extractors with node purity and overclocking
+- **Inter-Location Resource Flow**: Ship resources between locations using percentage or absolute export modes
+- **Real-Time Balance Calculations**:
+  - Automatic production and consumption tracking
+  - Resource surplus/deficit analysis with import/export breakdown
+  - Power consumption calculations with overclocking multipliers
+- **Data Persistence**: Auto-save to browser storage with JSON export/import for backups
+- **Visual Resource Icons**: Easy identification of all resources and machines
+- **Clean Dark Mode Interface**: Intuitive UI built with modern components
 
-### Planned Features
-- **Overview Dashboard**: Summary view of all locations and resource flow
-- **Optimization Suggestions**: Automated recommendations for production improvements
-- **Somersloop Support**: Production multiplier tracking
-- **Recipe Categorization**: Filter by tier and category
+### Planned Features (Phase 2)
+- **Power Generation Tracking**: Add generators and track net power balance
+- **Global Overview Dashboard**: See all locations and resource flows at a glance
+- **Collapsible Sections**: Minimize sections to focus on what matters
+- **Enhanced Location Management**: Better tools for organizing and managing locations
+
+### Future Features (Phase 3+)
+- **Smart Production Suggestions**: Automated optimization recommendations based on current surplus/deficit
+- **Somersloop Multiplier Support**: Track production bonuses from somersloops
+- **Production Goal Calculator**: Set a target output and get exact build requirements
+- **Recipe Filtering**: Filter by tier and production category
+- **URL Sharing**: Share factory configurations via link
+
+### Stretch Goals
+- **Save File Import**: Automatically import factory data from your Satisfactory save files
 
 ## Usage
 
