@@ -24,8 +24,17 @@ A web application to track and manage multiple factory locations in Satisfactory
 - **Somersloop Support**: Production multiplier tracking
 - **Recipe Categorization**: Filter by tier and category
 
-## Tech Stack
+## Usage
 
+If you just want to get started, you can use the online version at [https://baysen.github.io/sf-manager/]. All data is stored locally in your browser.
+
+## Building it yourself
+
+### Prerequisites
+- Node.js (v20.19.0+ or v22.12.0+)
+- npm
+
+### Tech Stack
 - **Vue 3** (Composition API)
 - **TypeScript**
 - **Vite**
@@ -33,12 +42,6 @@ A web application to track and manage multiple factory locations in Satisfactory
 - **Preline UI**
 - **Pinia** (State Management)
 - **Vue Router**
-
-## Getting Started
-
-### Prerequisites
-- Node.js (v20.19.0+ or v22.12.0+)
-- npm
 
 ### Installation
 
