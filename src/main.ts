@@ -5,15 +5,10 @@ import App from './App.vue'
 
 // Import and expose Floating UI DOM globally for Preline
 import * as FloatingUIDOM from '@floating-ui/dom'
-declare global {
-  interface Window {
-    FloatingUIDOM: typeof FloatingUIDOM
-  }
-}
 window.FloatingUIDOM = FloatingUIDOM
 
-// Import Preline
-import 'preline/preline'
+// Import Preline (dynamic import ensures it loads after DOM is ready)
+import('preline/dist/index.js')
 
 const app = createApp(App)
 
