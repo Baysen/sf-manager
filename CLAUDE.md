@@ -80,10 +80,9 @@ A web application to track and manage multiple factory locations in Satisfactory
 - Importing and parsing saves to import locations from train stations / truck stations / drone pads
   - Possibly even finding and importing all connected machines
 
-### Planned Improvements
-
-
 ## Data Structure
+
+The recipe and machine data is located in source-data.json
 
 ### Recipe
 ```json

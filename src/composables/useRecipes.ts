@@ -48,19 +48,24 @@ function transformRecipe(sourceRecipe: SourceRecipe): Recipe {
     ? sourceRecipe.name.replace('Alternate: ', '')
     : sourceRecipe.name;
 
+  const inputs = sourceRecipe.ingredients.map(([itemKey, amount]) => ({
+    resource: resourceNameMap.get(itemKey) || itemKey,
+    amount: amount * craftsPerMinute // Convert to per minute
+  }))
+
+  const outputs = sourceRecipe.products.map(([itemKey, amount]) => ({
+    resource: resourceNameMap.get(itemKey) || itemKey,
+    amount: amount * craftsPerMinute // Convert to per minute
+  }));
+
   return {
     id: sourceRecipe.key_name,
     name: displayName,
+    baseName: isAlternate && outputs.length > 0 ? outputs[0]?.resource : undefined,
     machine: building?.name || sourceRecipe.category,
     isAlternate,
-    inputs: sourceRecipe.ingredients.map(([itemKey, amount]) => ({
-      resource: resourceNameMap.get(itemKey) || itemKey,
-      amount: amount * craftsPerMinute // Convert to per minute
-    })),
-    outputs: sourceRecipe.products.map(([itemKey, amount]) => ({
-      resource: resourceNameMap.get(itemKey) || itemKey,
-      amount: amount * craftsPerMinute // Convert to per minute
-    })),
+    inputs,
+    outputs,
     powerConsumption: building?.power || 0 // MW at 100% clock speed
   };
 }
