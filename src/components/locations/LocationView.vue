@@ -35,14 +35,17 @@ const isExportModalOpen = ref(false);
 const editingExport = ref<ResourceExport | null>(null);
 
 // Filter production lines to only show those with valid recipes, sorted alphabetically by recipe name
+// For alternate recipes, sort by baseName (the output resource) instead of the alternate name
 const validProductionLines = computed(() => {
   if (!activeLocation.value) return [];
   return activeLocation.value.productionLines
     .filter(line => getRecipeById(line.recipeId))
     .sort((a, b) => {
-      const recipeA = getRecipeById(a.recipeId)?.name || '';
-      const recipeB = getRecipeById(b.recipeId)?.name || '';
-      return recipeA.localeCompare(recipeB);
+      const recipeA = getRecipeById(a.recipeId);
+      const recipeB = getRecipeById(b.recipeId);
+      const nameA = recipeA?.baseName || recipeA?.name || '';
+      const nameB = recipeB?.baseName || recipeB?.name || '';
+      return nameA.localeCompare(nameB);
     });
 });
 

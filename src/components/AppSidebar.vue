@@ -31,6 +31,11 @@ const emit = defineEmits<{
 
 const { locations } = useLocations()
 
+// Sort locations alphabetically by name
+const sortedLocations = computed(() => {
+  return [...locations.value].sort((a, b) => a.name.localeCompare(b.name))
+})
+
 // Data for navigation
 const data = computed(() => ({
   navigation: [
@@ -87,7 +92,7 @@ const data = computed(() => ({
       <!-- Locations List (only shown when Locations view is active) -->
       <NavLocations
         v-if="activeView === 'locations'"
-        :locations="locations"
+        :locations="sortedLocations"
         @add-location="emit('addLocation')"
       />
     </SidebarContent>

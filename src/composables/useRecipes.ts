@@ -111,7 +111,13 @@ export function useRecipes() {
       recipes = recipes.filter(recipe => recipe.isAlternate === isAlternateRequired);
     }
 
-    return recipes;
+    // Sort alphabetically by name
+    // For alternate recipes, sort by baseName (the output resource) instead of the alternate name
+    return recipes.sort((a, b) => {
+      const nameA = a.baseName || a.name;
+      const nameB = b.baseName || b.name;
+      return nameA.localeCompare(nameB);
+    });
   });
 
   // Get recipe by ID
