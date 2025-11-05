@@ -17,15 +17,54 @@ const emit = defineEmits<{
 const { allRecipes } = useRecipes();
 
 // Form state
+const selectedOutputResource = ref<string>('');
 const selectedRecipeId = ref<string>('');
 const overclockingConfigs = ref<OverclockingConfig[]>([
   { count: 1, percentage: 100 }
 ]);
 
+// Get unique output resources (alphabetically sorted)
+const outputResources = computed(() => {
+  const resources = new Set<string>();
+  allRecipes.value.forEach(recipe => {
+    recipe.outputs.forEach(output => {
+      resources.add(output.resource);
+    });
+  });
+  return Array.from(resources).sort();
+});
+
+// Recipes filtered by selected output resource
+const filteredRecipes = computed(() => {
+  if (!selectedOutputResource.value) return [];
+  return allRecipes.value.filter(recipe =>
+    recipe.outputs.some(output => output.resource === selectedOutputResource.value)
+  );
+});
+
 // Selected recipe details
 const selectedRecipe = computed(() => {
   if (!selectedRecipeId.value) return null;
   return allRecipes.value.find(r => r.id === selectedRecipeId.value) || null;
+});
+
+// Use a key to force re-render of the recipe select
+const recipeSelectKey = ref(0);
+
+// Watch for output resource change to update dropdown options
+watch(selectedOutputResource, async () => {
+  selectedRecipeId.value = '';
+
+  // Force re-render of the entire select container by changing the key
+  // This will cause Vue to destroy the old DOM (including Preline's wrapper) and create fresh
+  recipeSelectKey.value++;
+
+  // Wait for DOM update and initialize only the new recipe select
+  await nextTick();
+  const newRecipeSelectEl = document.querySelector('#recipe-select');
+  if (newRecipeSelectEl && (window as any).HSSelect) {
+    new (window as any).HSSelect(newRecipeSelectEl);
+  }
 });
 
 // Calculate total machine count
@@ -38,14 +77,30 @@ watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     if (props.productionLine) {
       // Edit mode - populate with existing data
-      selectedRecipeId.value = props.productionLine.recipeId;
-      overclockingConfigs.value = props.productionLine.overclocking.map(config => ({ ...config }));
+      const line = props.productionLine;
+      const recipeIdToRestore = line.recipeId;
+      overclockingConfigs.value = line.overclocking.map(config => ({ ...config }));
+
+      // Find and set the output resource for this recipe
+      const recipe = allRecipes.value.find(r => r.id === recipeIdToRestore);
+      const firstOutput = recipe?.outputs?.[0];
+      if (firstOutput) {
+        selectedOutputResource.value = firstOutput.resource;
+
+        // The watcher on selectedOutputResource will handle initialization and key change
+        // Wait for that to complete, then set the recipe ID
+        await nextTick();
+        await nextTick(); // Extra tick for the watcher's autoInit to complete
+        requestAnimationFrame(() => {
+          selectedRecipeId.value = recipeIdToRestore;
+        });
+      }
     } else {
       // Add mode - reset form
       resetForm();
     }
 
-    // Initialize Preline components after DOM update
+    // Initialize Preline components after form is set up
     await nextTick();
     if (window.HSStaticMethods) {
       window.HSStaticMethods.autoInit();
@@ -54,6 +109,7 @@ watch(() => props.isOpen, async (isOpen) => {
 });
 
 const resetForm = () => {
+  selectedOutputResource.value = '';
   selectedRecipeId.value = '';
   overclockingConfigs.value = [{ count: 1, percentage: 100 }];
 };
@@ -123,19 +179,19 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
 
       <!-- Modal Body -->
       <div class="p-6 space-y-6 overflow-y-auto flex-1">
-        <!-- Recipe Selector -->
+        <!-- Output Resource Selector -->
         <div>
           <label class="block text-sm font-medium text-gray-300 mb-2">
-            Recipe <span class="text-red-400">*</span>
+            Output Resource <span class="text-red-400">*</span>
           </label>
 
-          <!-- Advanced Select with Search -->
+          <!-- Resource Select with Search -->
           <select
-            v-model="selectedRecipeId"
+            v-model="selectedOutputResource"
             data-hs-select='{
-              "placeholder": "Select a recipe...",
+              "placeholder": "Select output resource...",
               "hasSearch": true,
-              "searchPlaceholder": "Search recipes...",
+              "searchPlaceholder": "Search resources...",
               "toggleTag": "<button type=\"button\" aria-expanded=\"false\"></button>",
               "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-3 ps-4 pe-9 flex gap-x-2 text-nowrap w-full cursor-pointer bg-gray-900 border border-gray-700 rounded-lg text-start text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
               "dropdownScope": "window",
@@ -148,15 +204,52 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
             }'
             class="hidden"
           >
-            <option value="">Select a recipe...</option>
+            <option value="">Select output resource...</option>
             <option
-              v-for="recipe in allRecipes"
-              :key="recipe.id"
-              :value="recipe.id"
+              v-for="resource in outputResources"
+              :key="resource"
+              :value="resource"
             >
-              {{ recipe.name }} ({{ recipe.machine }}){{ recipe.isAlternate ? ' [ALT]' : '' }}
+              {{ resource }}
             </option>
           </select>
+        </div>
+
+        <!-- Recipe Selector -->
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-2">
+            Recipe <span class="text-red-400">*</span>
+          </label>
+
+          <!-- Recipe Select Container - keyed to force complete re-render -->
+          <div :key="recipeSelectKey">
+            <select
+              id="recipe-select"
+              v-model="selectedRecipeId"
+              :disabled="!selectedOutputResource"
+              data-hs-select='{
+                "placeholder": "Select a recipe...",
+                "hasSearch": false,
+                "toggleTag": "<button type=\"button\" aria-expanded=\"false\"></button>",
+                "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-3 ps-4 pe-9 flex gap-x-2 text-nowrap w-full cursor-pointer bg-gray-900 border border-gray-700 rounded-lg text-start text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+                "dropdownScope": "window",
+                "dropdownClasses": "mt-2 z-[60] w-full max-h-72 p-1 space-y-0.5 bg-gray-900 border border-gray-700 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-800 [&::-webkit-scrollbar-thumb]:bg-gray-600",
+                "optionClasses": "py-2 px-4 w-full text-sm text-white cursor-pointer hover:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-800",
+                "optionTemplate": "<div class=\"flex justify-between items-center w-full\"><span data-title></span><span class=\"hidden hs-selected:block\"><svg class=\"shrink-0 size-3.5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div>",
+                "extraMarkup": "<div class=\"absolute top-1/2 end-3 -translate-y-1/2\"><svg class=\"shrink-0 size-3.5 text-gray-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/></svg></div>"
+              }'
+              class="hidden"
+            >
+              <option value="">Select a recipe...</option>
+              <option
+                v-for="recipe in filteredRecipes"
+                :key="recipe.id"
+                :value="recipe.id"
+              >
+                {{ recipe.name }} - {{ recipe.machine }}{{ recipe.isAlternate ? ' (Alternate)' : '' }}
+              </option>
+            </select>
+          </div>
 
           <!-- Selected recipe details -->
           <div v-if="selectedRecipe" class="mt-4 p-4 bg-gray-900 rounded-md border border-gray-700">
@@ -272,7 +365,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
         </button>
         <button
           @click="handleSave"
-          :disabled="!selectedRecipeId || totalMachineCount === 0"
+          :disabled="!selectedOutputResource || !selectedRecipeId || totalMachineCount === 0"
           class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
         >
           {{ productionLine ? 'Update' : 'Add' }} Production Line
