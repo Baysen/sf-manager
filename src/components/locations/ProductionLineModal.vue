@@ -153,6 +153,15 @@ const handleClose = () => {
 
 // Preset clock speeds
 const presetClockSpeeds = [50, 100, 150, 200, 250];
+
+// Helper function to conditionally add icon to alternate recipes
+const getSelectOptionData = (recipe: any) => {
+  if (!recipe.isAlternate) return undefined;
+
+  return JSON.stringify({
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-corner-down-right-icon lucide-corner-down-right"><path d="m15 10 5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>'
+  });
+};
 </script>
 
 <template>
@@ -235,7 +244,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
                 "dropdownScope": "window",
                 "dropdownClasses": "mt-2 z-[60] w-full max-h-72 p-1 space-y-0.5 bg-gray-900 border border-gray-700 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-800 [&::-webkit-scrollbar-thumb]:bg-gray-600",
                 "optionClasses": "py-2 px-4 w-full text-sm text-white cursor-pointer hover:bg-gray-800 rounded-lg focus:outline-none focus:bg-gray-800",
-                "optionTemplate": "<div class=\"flex justify-between items-center w-full\"><span data-title></span><span class=\"hidden hs-selected:block\"><svg class=\"shrink-0 size-3.5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div>",
+                "optionTemplate": "<div class=\"flex justify-between items-center w-full\"><div class=\"flex items-center gap-x-2\"><div class=\"flex items-center\" data-icon></div><span data-title></span></div><span class=\"hidden hs-selected:block\"><svg class=\"shrink-0 size-3.5 text-blue-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div>",
                 "extraMarkup": "<div class=\"absolute top-1/2 end-3 -translate-y-1/2\"><svg class=\"shrink-0 size-3.5 text-gray-500\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/></svg></div>"
               }'
               class="hidden"
@@ -245,6 +254,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
                 v-for="recipe in filteredRecipes"
                 :key="recipe.id"
                 :value="recipe.id"
+                :data-hs-select-option="getSelectOptionData(recipe)"
               >
                 {{ recipe.name }} - {{ recipe.machine }}{{ recipe.isAlternate ? ' (Alternate)' : '' }}
               </option>
