@@ -39,7 +39,7 @@ A web application to track and manage multiple factory locations in Satisfactory
 
 ## Core Features
 
-### MVP (Phase 1) - Currently Reimplementing with shadcn-vue
+### MVP (Phase 1) - Implemented
 1. Recipe management system with all Satisfactory recipes
 2. Multi-location factory tracking
 3. Production line management per location
@@ -49,9 +49,11 @@ A web application to track and manage multiple factory locations in Satisfactory
 7. Local storage persistence
 8. JSON export/import functionality
 9. Icons for all resources
+10. Collapsible sidebar navigation
+11. Resource flow tracking between locations
 
-### Post-MVP (Phase 2) - Will need reimplementation after Phase 1
-- Resource flow tracking between locations
+### Post-MVP (Phase 2)
+- Enhanced resource flow visualization
 - Alphabetical sorting of all lists
 - Better visualization of alternate recipes in dropdowns
 - Split resource and recipe selection into separate dropdowns for easier use
@@ -170,15 +172,23 @@ The recipe and machine data is located in source-data.json
 
 ### Navigation Structure
 ```
-Main Navigation (Top)
-├── Locations
-└── Available Recipes
-
-Location View (when "Locations" is active)
-├── Location Tabs (horizontal tabs for each location)
+Sidebar Navigation (Left, collapsible)
+├── App Header
+│   ├── App Icon (Factory)
+│   └── App Title (Satisfactory Factory Manager)
+├── Main Navigation
+│   ├── Locations
+│   └── Available Recipes
+├── Location List (when "Locations" is active)
+│   ├── Location 1
+│   ├── Location 2
 │   └── [+ Add Location button]
-│
-└── Location Content (for selected tab)
+└── Footer
+    ├── Export Data
+    └── Import Data
+
+Main Content Area
+└── Location Content (when location is selected)
     ├── Left Panel (70%)
     │   ├── Resource Extractions List
     │   │   ├── [+ Add Resource Extraction button]
@@ -456,145 +466,118 @@ On each location, imports are displayed in the Resource Summary but cannot be di
 - Category tags (Mining, Smelting, Construction, Advanced Manufacturing, etc.)
 - Filter recipes by tier and category
 
+## Design System & UI Components
+
+### shadcn-vue Integration
+The application uses [shadcn-vue](https://www.shadcn-vue.com/) as its component library, built on Reka UI and Tailwind CSS v4.
+
+#### Why shadcn-vue?
+- **Vue 3 Native**: Built specifically for Vue 3 with proper lifecycle management
+- **Copy-Paste Components**: Components live in your codebase (`src/components/ui/`), giving you full control
+- **Tailwind CSS v4**: First-class support for the latest Tailwind features
+- **Accessible**: Built with accessibility in mind using Reka UI primitives
+- **Customizable**: Easy to modify components to fit your needs
+- **Type-Safe**: Full TypeScript support out of the box
+
+#### Setup & Configuration
+The project uses shadcn-vue's Tailwind v4 configuration:
+- CLI tool: `npx shadcn-vue@latest` for adding components
+- Path aliases: `@/` → `./src/`
+- Theme: CSS variables for colors, defined in `src/assets/main.css`
+- Dark mode: Default, using OKLCH color space
+
+#### Components Used
+- **Layout**: Sidebar (collapsible), SidebarProvider, Card
+- **Forms**: Dialog, Select, Input, Label, Button
+- **Display**: Badge, Separator
+- **Icons**: Lucide Vue Next
+
+#### Theme System
+Colors are defined using CSS custom properties in `src/assets/main.css`:
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.7176 0.221 264.4);
+  /* ... more theme variables */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* ... dark mode overrides */
+}
+```
+
+Use theme tokens in components:
+- `text-foreground` / `text-muted-foreground` for text
+- `bg-card` / `bg-background` for backgrounds
+- `border-border` for borders
+- `text-primary` for accent colors
+- `text-destructive` for errors
+- `text-chart-4` for highlights (yellow)
+
+#### Adding New Components
+```bash
+npx shadcn-vue@latest add [component-name]
+```
+
+This copies the component into `src/components/ui/[component-name]/`, where you can customize it as needed.
+
 ## Development Notes
 - Use Vue 3 Composition API with `<script setup>` syntax
 - Use TypeScript for type safety
 - Component structure should be modular and reusable
 - Responsive design (mobile-friendly)
-- **Design System**: Use shadcn-vue's default theme with dark mode
-- **Component Usage**: Use shadcn-vue components and blocks as the foundation
 - Always reference shadcn-vue documentation for component implementation
-- Tailwind CSS v4.0 for utility styling
+- Use Lucide icons for consistency (`lucide-vue-next`)
+- Follow shadcn-vue patterns - components are meant to be copied and customized
 
-## Preline UI → shadcn-vue Migration
-
-### Migration Rationale
-Preline UI, while functional, was designed for vanilla JavaScript and caused significant friction with Vue 3's reactivity system. Key issues included:
-- Manual lifecycle management with `window.HSStaticMethods.autoInit()`
-- Complex component initialization/destruction patterns (especially with Select dropdowns)
-- Fighting against Vue's reactive data flow
-- Not designed for Vue's component lifecycle
-
-**shadcn-vue** solves these problems by:
-- Built specifically for Vue 3 with proper lifecycle management
-- Copy-paste components you own and can modify
-- Full Tailwind CSS v4 support
-- Beautiful, accessible components out of the box
-- Official documentation and examples for Vue patterns
-
-### Migration Plan
-
-#### Phase 1: Setup & Configuration
-1. **Install shadcn-vue CLI** with Tailwind v4 support
-   - Use official Tailwind v4 setup guide: https://www.shadcn-vue.com/docs/tailwind-v4.html
-   - Configure path aliases (`@/` → `./src/`)
-   - Set up CSS variables for theming
-
-2. **Update theme configuration**
-   - Port existing color scheme to shadcn-vue's CSS variable system
-   - Configure dark mode (default)
-   - Add necessary CSS imports
-
-#### Phase 2: New Navigation Architecture
-3. **Implement Sidebar navigation** (replacing top tabs + location tabs)
-   - Use shadcn-vue Sidebar component (collapsible to icons)
-   - Add sidebar block for layout structure
-   - Navigation structure:
-     - Top level: Locations list, Recipes view
-     - Second level: Individual locations (when Locations is active)
-   - Benefits over old tab system:
-     - Scales better with many locations
-     - Mobile-responsive (drawer on mobile)
-     - More professional appearance
-     - Collapsible to save screen space
-
-#### Phase 3: Component Migration
-4. **Replace Preline Select components**
-   - ProductionLineModal.vue: Use shadcn-vue Select or Combobox
-   - ResourceExtractionModal.vue: Use shadcn-vue Select or Combobox
-   - Remove all `data-hs-select` attributes and initialization logic
-   - Remove all `window.HSStaticMethods` calls
-
-5. **Migrate modal components**
-   - Wrap all modals with shadcn-vue Dialog component
-   - Use Dialog's built-in overlay, close handling, accessibility
-
-6. **Replace custom UI elements with shadcn-vue components**
-   - Buttons → shadcn-vue Button component
-   - Inputs → shadcn-vue Input component
-   - Cards → shadcn-vue Card component
-   - Badges → shadcn-vue Badge component
-
-#### Phase 4: Cleanup
-7. **Remove Preline dependencies**
-   - Remove `preline` from package.json
-   - Remove `@tailwindcss/forms` (if no longer needed)
-   - Remove `@floating-ui/dom` and `@floating-ui/vue` (if only used by Preline)
-   - Remove Preline CSS imports from stylesheets
-   - Remove Preline import from main.ts
-
-8. **Test and validate**
-   - Test all modals and forms
-   - Test location navigation
-   - Test data persistence
-   - Test export/import functionality
-   - Verify mobile responsiveness
-
-### Component Mapping
-
-| Old (Preline/Custom) | New (shadcn-vue) | Notes |
-|----------------------|------------------|-------|
-| Preline Select (with search) | Select or Combobox | Use Combobox for searchable dropdowns |
-| Custom modals | Dialog | Built-in overlay, accessibility, animations |
-| Custom buttons | Button | Multiple variants (default, outline, ghost, etc.) |
-| Custom inputs | Input | Consistent styling, built-in validation states |
-| Custom cards | Card | CardHeader, CardContent, CardFooter subcomponents |
-| Custom badges | Badge | Multiple variants for different states |
-| Top navigation + tabs | Sidebar | Collapsible, mobile-responsive, scalable |
-
-### Key Principles for Migration
-- **Start fresh with shadcn-vue patterns** - don't force old UI/UX into new components
-- **Use shadcn-vue blocks** - leverage pre-built layouts (especially Sidebar blocks)
-- **Copy and customize** - shadcn-vue components are in your codebase, modify as needed
-- **Follow official examples** - shadcn-vue docs show best practices for Vue 3
-
-### Expected Improvements
-- ✅ No more manual component initialization
-- ✅ No more fighting with Vue reactivity
-- ✅ Better scalability (sidebar navigation handles many locations)
-- ✅ Improved mobile experience
-- ✅ More professional, modern UI
-- ✅ Full control over component code
-- ✅ Better TypeScript support
-- ✅ Easier maintenance and debugging
-
-## File Structure Suggestion
+## File Structure
 ```
 src/
 ├── components/
-│   ├── locations/
-│   │   ├── LocationTabs.vue
+│   ├── ui/                          # shadcn-vue components
+│   │   ├── button/
+│   │   ├── card/
+│   │   ├── dialog/
+│   │   ├── input/
+│   │   ├── label/
+│   │   ├── select/
+│   │   ├── badge/
+│   │   └── sidebar/
+│   ├── locations/                   # Location-specific components
+│   │   ├── LocationView.vue
 │   │   ├── ProductionLineCard.vue
 │   │   ├── ProductionLineModal.vue
+│   │   ├── ResourceExtractionCard.vue
+│   │   ├── ResourceExtractionModal.vue
+│   │   ├── ResourceExportCard.vue
+│   │   ├── ResourceExportModal.vue
 │   │   ├── ResourceSummary.vue
 │   │   └── PowerSummary.vue
-│   ├── recipes/
-│   │   ├── RecipeGrid.vue
-│   │   ├── RecipeCard.vue
-│   │   └── RecipeFilter.vue
-│   └── common/
-│       ├── AppNavigation.vue
-│       └── ExportImport.vue
-├── composables/
+│   ├── recipes/                     # Recipe browser components
+│   │   └── RecipesView.vue
+│   ├── common/                      # Shared components
+│   │   └── ResourceIcon.vue
+│   ├── AppSidebar.vue              # Main navigation sidebar
+│   ├── NavLocations.vue            # Location list in sidebar
+│   └── NavFooter.vue               # Export/Import in sidebar
+├── composables/                     # Vue composables
 │   ├── useLocations.ts
 │   ├── useRecipes.ts
+│   ├── useMiners.ts
 │   ├── useStorage.ts
 │   └── useCalculations.ts
-├── types/
+├── types/                           # TypeScript definitions
 │   ├── recipe.ts
 │   ├── location.ts
 │   └── productionLine.ts
-├── data/
-│   └── recipes.json
-└── App.vue
+├── lib/                             # Utility functions
+│   └── utils.ts
+├── data/                            # Static data
+│   └── source-data.json
+├── assets/
+│   └── main.css                    # Tailwind & theme config
+└── App.vue                         # Root component
 ```
