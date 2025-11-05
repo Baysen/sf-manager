@@ -52,17 +52,35 @@ A web application to track and manage multiple factory locations in Satisfactory
 
 ### Post-MVP (Phase 2)
 - Resource flow tracking between locations ✅
+- Alphabetical sorting of all lists AND/OR ability to drag and drop sort
+- Better visualization of alternate recipes in dropdowns
+- Add power creation machines
+- Limit resource extraction machines to the resources they can actually extract
 - Overview page summarizing all locations
-- Suggestions for optimizations
-  - If all required resources of a production line are in surplus big enough to warrant extra machines, calculate the possible maximum it could handle and visually suggest adding them with "ghost entries"
-- Somersloop production multiplier support
-- Recipe categorization by tier
+- Accordion-like functionality to be able to collapse sections (Resource Extraction, ...)
+- A way to sort and edit/delete locations
+
 
 ### Post-MVP (Phase 3)
 - Suggest simple optimizations that could make use of small surpluses (like having 15 iron ore surplus, suggest overclocking one machine to 150%). This is only for small corrections
 - If a resource of a production line is in deficit, suggest improvements depending on:
   - Is the resource extracted on the same location? -> Suggest more miners or overclocking if available
   - Is the resource imported? -> Suggest improvements on the location where it comes from, making it clear the addition would be to satisfy an exported resource
+- Suggestions for optimizations
+  - If all required resources of a production line are in surplus big enough to warrant extra machines, calculate the possible maximum it could handle and visually suggest adding them with "ghost entries"
+- Somersloop production multiplier support
+- Recipe categorization by tier
+- Compact mode where everything is packed even tighter
+- "Path to resource goal" - Set how much more of a resource you want to produce and get the exact list of machines etc you need to add to make it happen
+  - Possible to do even across locations?
+- Somehow make it possible to share factories through a URL?
+
+### Post-MVP (Stretch Goals)
+- Importing and parsing saves to import locations from train stations / truck stations / drone pads
+  - Possibly even finding and importing all connected machines
+
+### Planned Improvements
+
 
 ## Data Structure
 
