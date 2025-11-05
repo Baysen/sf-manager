@@ -35,7 +35,15 @@ const getTotalPower = () => {
       <div class="flex items-center gap-2">
         <ResourceIcon v-if="recipe.outputs[0]" :resource-key="recipe.outputs[0].resource" size="md" />
         <div>
+          <div class="flex items-start justify-between gap-2">
           <h4 class="text-base font-semibold text-white">{{ recipe.name }}</h4>
+            <span
+            v-if="recipe.isAlternate"
+            class="px-1 py-1 text-xs font-medium bg-purple-600 text-white rounded"
+          >
+            ALT
+          </span>
+          </div>
           <p class="text-xs text-gray-400">{{ recipe.machine }} • {{ getTotalMachines(productionLine) }} machines</p>
         </div>
       </div>
@@ -73,6 +81,7 @@ const getTotalPower = () => {
         <div class="space-y-0.5">
           <div v-for="input in recipe.inputs" :key="input.resource" class="flex items-center gap-1">
             <ResourceIcon :resource-key="input.resource" size="sm" />
+            {{ input.resource }}:
             <span class="text-red-400">{{ getCalculatedRate(input.resource, true).toFixed(1) }}/min</span>
           </div>
         </div>
@@ -82,6 +91,7 @@ const getTotalPower = () => {
         <div class="space-y-0.5">
           <div v-for="output in recipe.outputs" :key="output.resource" class="flex items-center gap-1">
             <ResourceIcon :resource-key="output.resource" size="sm" />
+            {{ output.resource }}:
             <span class="text-green-400">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
           </div>
         </div>
