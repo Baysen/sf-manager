@@ -43,9 +43,14 @@ function transformRecipe(sourceRecipe: SourceRecipe): Recipe {
   // Calculate items per minute (60 seconds per minute / craft time)
   const craftsPerMinute = 60 / sourceRecipe.time;
 
+  // Remove "Alternate: " prefix from the name if present
+  const displayName = isAlternate
+    ? sourceRecipe.name.replace('Alternate: ', '')
+    : sourceRecipe.name;
+
   return {
     id: sourceRecipe.key_name,
-    name: sourceRecipe.name,
+    name: displayName,
     machine: building?.name || sourceRecipe.category,
     isAlternate,
     inputs: sourceRecipe.ingredients.map(([itemKey, amount]) => ({
