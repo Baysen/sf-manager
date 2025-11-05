@@ -48,23 +48,31 @@ const selectedRecipe = computed(() => {
   return allRecipes.value.find(r => r.id === selectedRecipeId.value) || null;
 });
 
-// Use a key to force re-render of the recipe select
-const recipeSelectKey = ref(0);
+// Flag to prevent watcher from interfering during modal initialization
+const isInitializing = ref(false);
 
-// Watch for output resource change to update dropdown options
-watch(selectedOutputResource, async () => {
+// Watch for output resource change to reset recipe selection
+watch(selectedOutputResource, async (_, oldValue) => {
+  // Don't reset recipe selection during modal initialization (edit mode)
+  if (isInitializing.value) return;
+
+  // When output resource changes, destroy the old Preline select instance
+  // before Vue re-renders with the new key
+  if (oldValue) {
+    const recipeSelectEl = document.querySelector('#recipe-select');
+    if (recipeSelectEl) {
+      const instance = (window as any).HSSelect?.getInstance(recipeSelectEl);
+      if (instance) {
+        instance.destroy();
+      }
+    }
+  }
+
   selectedRecipeId.value = '';
 
-  // Force re-render of the entire select container by changing the key
-  // This will cause Vue to destroy the old DOM (including Preline's wrapper) and create fresh
-  recipeSelectKey.value++;
-
-  // Wait for DOM update and initialize only the new recipe select
+  // Wait for Vue to re-render with new key, then reinitialize
   await nextTick();
-  const newRecipeSelectEl = document.querySelector('#recipe-select');
-  if (newRecipeSelectEl && (window as any).HSSelect) {
-    new (window as any).HSSelect(newRecipeSelectEl);
-  }
+  window.HSStaticMethods?.autoInit();
 });
 
 // Calculate total machine count
@@ -77,6 +85,8 @@ watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     if (props.productionLine) {
       // Edit mode - populate with existing data
+      isInitializing.value = true;
+
       const line = props.productionLine;
       const recipeIdToRestore = line.recipeId;
       overclockingConfigs.value = line.overclocking.map(config => ({ ...config }));
@@ -85,26 +95,27 @@ watch(() => props.isOpen, async (isOpen) => {
       const recipe = allRecipes.value.find(r => r.id === recipeIdToRestore);
       const firstOutput = recipe?.outputs?.[0];
       if (firstOutput) {
+        // Set both values immediately - Vue will handle reactivity
         selectedOutputResource.value = firstOutput.resource;
+        selectedRecipeId.value = recipeIdToRestore;
 
-        // The watcher on selectedOutputResource will handle initialization and key change
-        // Wait for that to complete, then set the recipe ID
+        // Wait for DOM to render the recipe section with both values set
         await nextTick();
-        await nextTick(); // Extra tick for the watcher's autoInit to complete
-        requestAnimationFrame(() => {
-          selectedRecipeId.value = recipeIdToRestore;
-        });
+        await nextTick();
+
+        // Initialize Preline with the already-set values
+        window.HSStaticMethods?.autoInit();
       }
+
+      isInitializing.value = false;
     } else {
       // Add mode - reset form
       resetForm();
     }
 
-    // Initialize Preline components after form is set up
+    // Reinitialize Preline components for the modal content
     await nextTick();
-    if (window.HSStaticMethods) {
-      window.HSStaticMethods.autoInit();
-    }
+    window.HSStaticMethods?.autoInit();
   }
 });
 
@@ -225,17 +236,15 @@ const getSelectOptionData = (recipe: any) => {
         </div>
 
         <!-- Recipe Selector -->
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+        <div v-if="selectedOutputResource" :key="'recipe-section-' + selectedOutputResource">
+          <label class="block text-sm font-medium text-gray-300 mb-2" for="recipe-select">
             Recipe <span class="text-red-400">*</span>
           </label>
 
-          <!-- Recipe Select Container - keyed to force complete re-render -->
-          <div :key="recipeSelectKey">
-            <select
+          <!-- Recipe Select -->
+          <select
               id="recipe-select"
               v-model="selectedRecipeId"
-              :disabled="!selectedOutputResource"
               data-hs-select='{
                 "placeholder": "Select a recipe...",
                 "hasSearch": false,
@@ -249,17 +258,19 @@ const getSelectOptionData = (recipe: any) => {
               }'
               class="hidden"
             >
+            
               <option value="">Select a recipe...</option>
               <option
+                v-if="selectedOutputResource"
                 v-for="recipe in filteredRecipes"
                 :key="recipe.id"
                 :value="recipe.id"
                 :data-hs-select-option="getSelectOptionData(recipe)"
+                :selected="selectedRecipeId === recipe.id"
               >
                 {{ recipe.name }} - {{ recipe.machine }}{{ recipe.isAlternate ? ' (Alternate)' : '' }}
               </option>
             </select>
-          </div>
 
           <!-- Selected recipe details -->
           <div v-if="selectedRecipe" class="mt-4 p-4 bg-gray-900 rounded-md border border-gray-700">

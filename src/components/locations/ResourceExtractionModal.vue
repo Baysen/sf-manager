@@ -47,11 +47,9 @@ watch(() => props.isOpen, async (isOpen) => {
       resetForm();
     }
 
-    // Initialize Preline components after DOM update
+    // Reinitialize Preline components for the modal content
     await nextTick();
-    if (window.HSStaticMethods) {
-      window.HSStaticMethods.autoInit();
-    }
+    window.HSStaticMethods?.autoInit();
   }
 });
 
