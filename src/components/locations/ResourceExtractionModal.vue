@@ -15,6 +15,11 @@ const emit = defineEmits<{
 
 const { allMiners, extractableResources } = useMiners();
 
+// Sort resources alphabetically
+const sortedExtractableResources = computed(() => {
+  return [...extractableResources.value].sort((a, b) => a.name.localeCompare(b.name));
+});
+
 // Form state
 const selectedMinerType = ref<string>('');
 const selectedResourceType = ref<string>('');
@@ -181,7 +186,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250];
           >
             <option value="">Select resource...</option>
             <option
-              v-for="resource in extractableResources"
+              v-for="resource in sortedExtractableResources"
               :key="resource.key_name"
               :value="resource.key_name"
             >

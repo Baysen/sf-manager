@@ -52,7 +52,8 @@ A web application to track and manage multiple factory locations in Satisfactory
 
 ### Post-MVP (Phase 2)
 - Resource flow tracking between locations ✅
-- Alphabetical sorting of all lists AND/OR ability to drag and drop sort
+- Alphabetical sorting of all lists ✅
+  - AND/OR ability to drag and drop sort
 - Better visualization of alternate recipes in dropdowns
 - Add power creation machines
 - Limit resource extraction machines to the resources they can actually extract

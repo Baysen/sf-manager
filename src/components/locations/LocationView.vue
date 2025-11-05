@@ -31,18 +31,28 @@ const editingExtractionLine = ref<ResourceExtractionLine | null>(null);
 const isExportModalOpen = ref(false);
 const editingExport = ref<ResourceExport | null>(null);
 
-// Filter production lines to only show those with valid recipes
+// Filter production lines to only show those with valid recipes, sorted alphabetically by recipe name
 const validProductionLines = computed(() => {
   if (!activeLocation.value) return [];
-  return activeLocation.value.productionLines.filter(line => getRecipeById(line.recipeId));
+  return activeLocation.value.productionLines
+    .filter(line => getRecipeById(line.recipeId))
+    .sort((a, b) => {
+      const recipeA = getRecipeById(a.recipeId)?.name || '';
+      const recipeB = getRecipeById(b.recipeId)?.name || '';
+      return recipeA.localeCompare(recipeB);
+    });
 });
 
-// Filter extraction lines to only show those with valid miners
+// Filter extraction lines to only show those with valid miners, sorted alphabetically by resource name
 const validExtractionLines = computed(() => {
   if (!activeLocation.value) return [];
-  return activeLocation.value.resourceExtractionLines.filter(line =>
-    getMinerByKeyName(line.minerType) && getResourceByKeyName(line.resourceType)
-  );
+  return activeLocation.value.resourceExtractionLines
+    .filter(line => getMinerByKeyName(line.minerType) && getResourceByKeyName(line.resourceType))
+    .sort((a, b) => {
+      const resourceA = getResourceByKeyName(a.resourceType)?.name || '';
+      const resourceB = getResourceByKeyName(b.resourceType)?.name || '';
+      return resourceA.localeCompare(resourceB);
+    });
 });
 
 const resourceBalances = computed(() => {
@@ -181,20 +191,10 @@ const handleExportModalSave = (exportData: Omit<ResourceExport, 'id'>) => {
   }
 };
 
-// Group exports by resource
-const groupedExports = computed(() => {
+// Sort exports alphabetically by resource name
+const sortedExports = computed(() => {
   if (!activeLocation.value) return [];
-
-  const groups = new Map<string, { resource: string; exports: ResourceExport[] }>();
-
-  for (const exp of activeLocation.value.exports) {
-    if (!groups.has(exp.resource)) {
-      groups.set(exp.resource, { resource: exp.resource, exports: [] });
-    }
-    groups.get(exp.resource)!.exports.push(exp);
-  }
-
-  return Array.from(groups.values());
+  return [...activeLocation.value.exports].sort((a, b) => a.resource.localeCompare(b.resource));
 });
 
 // Calculate export amounts and warnings
@@ -307,7 +307,7 @@ const getLocationName = (locationId: string): string => {
 
         <div v-else class="space-y-4">
           <ResourceExportCard
-            v-for="exp in activeLocation.exports"
+            v-for="exp in sortedExports"
             :key="exp.id"
             :resource-export="exp"
             :destination-location-name="getLocationName(exp.toLocationId)"
