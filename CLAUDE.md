@@ -53,8 +53,9 @@ A web application to track and manage multiple factory locations in Satisfactory
 ### Post-MVP (Phase 2)
 - Resource flow tracking between locations ✅
 - Alphabetical sorting of all lists ✅
-  - AND/OR ability to drag and drop sort
-- Better visualization of alternate recipes in dropdowns
+- Better visualization of alternate recipes in dropdowns ✅
+- Split resource and recipe selection into separate dropdowns for easier use ✅
+- Ability to drag and drop sort lists
 - Add power creation machines
 - Limit resource extraction machines to the resources they can actually extract
 - Overview page summarizing all locations
@@ -125,16 +126,13 @@ The recipe and machine data is located in source-data.json
       ]
     }
   ],
-  "resourceExtractions": [
+  "resourceExtractionLines": [
     {
       "id": "string (unique)",
-      "resource": "string",
-      "extractorType": "string (Miner Mk1, Miner Mk2, Miner Mk3, Oil Extractor, Water Extractor)",
-      "purityCounts": {
-        "impure": "number",
-        "normal": "number",
-        "pure": "number"
-      },
+      "minerType": "string (miner-mk1, miner-mk2, miner-mk3, oil-pump, water-extractor)",
+      "resourceType": "string (iron-ore, copper-ore, crude-oil, water, etc.)",
+      "purity": "string (impure | normal | pure)",
+      "machineCount": "number",
       "overclocking": [
         {
           "count": "number (extractors at this clock speed)",
@@ -184,23 +182,24 @@ Location View (when "Locations" is active)
     ├── Left Panel (70%)
     │   ├── Resource Extractions List
     │   │   ├── [+ Add Resource Extraction button]
-    │   │   └── Resource Extraction Cards (grouped by resource)
-    │   │       ├── Resource name
-    │   │       ├── Extractor type
-    │   │       ├── Purity breakdown
+    │   │   └── Resource Extraction Cards (individual entries per miner/extractor)
+    │   │       ├── Resource name with icon
+    │   │       ├── Extractor type with icon
+    │   │       ├── Purity
+    │   │       ├── Machine count
     │   │       ├── Overclocking details
     │   │       ├── Total extraction rate
-    │   │       └── [Edit] [Delete] actions
+    │   │       └── [Edit] [Delete] icon buttons
     │   │
     │   ├── Production Lines List
     │   │   ├── [+ Add Production Line button]
     │   │   └── Production Line Cards (grouped by recipe)
-    │   │       ├── Recipe name
-    │   │       ├── Machine type
+    │   │       ├── Recipe name (base name + alternate suffix if applicable)
+    │   │       ├── Machine type with icon
     │   │       ├── Machine count
     │   │       ├── Overclocking details
-    │   │       ├── Total production/consumption rates
-    │   │       └── [Edit] [Delete] actions
+    │   │       ├── Total production/consumption rates with resource icons
+    │   │       └── [Edit] [Delete] icon buttons
     │   │
     │   ├── Resource Exports List
     │   │   ├── [+ Add Resource Export button]
@@ -214,14 +213,16 @@ Location View (when "Locations" is active)
     │   │
     │   ├── Add/Edit Resource Extraction Modal
     │   │   ├── Resource selector (dropdown)
-    │   │   ├── Extractor type selector
-    │   │   ├── Purity counts (impure/normal/pure)
+    │   │   ├── Extractor type selector (dropdown, filtered to extractors that can extract the selected resource)
+    │   │   ├── Purity selector (dropdown: impure/normal/pure)
+    │   │   ├── Machine count input
     │   │   ├── Overclocking configuration
     │   │   │   └── Dynamic list: [X extractors at Y%]
     │   │   └── [Save] [Cancel]
     │   │
     │   ├── Add/Edit Production Line Modal
-    │   │   ├── Recipe selector (searchable dropdown)
+    │   │   ├── Resource selector (dropdown, first step)
+    │   │   ├── Recipe selector (dropdown, filtered by selected resource, shows alternate recipes with icons)
     │   │   ├── Machine count input
     │   │   ├── Overclocking configuration
     │   │   │   └── Dynamic list: [X machines at Y%]
@@ -348,6 +349,42 @@ Validation:
 - Export button creates downloadable JSON file with timestamp in filename
 - Import button accepts JSON file and validates structure before loading
 - Show confirmation before importing (will overwrite existing data)
+
+### ⚠️ CRITICAL: Data Format Versioning and Migration
+
+**IT IS PARAMOUNT** that the export/import JSON format remains consistent and backward compatible. Any changes to the data structure MUST include a migration strategy.
+
+#### Data Format Consistency Rules:
+1. **MUST** maintain the current version format (currently `1.0.0`)
+2. **MUST NOT** remove or rename existing fields without providing migration logic
+3. **MUST** increment version number when making breaking changes to the data structure
+4. **MUST** implement migration functions in `useStorage.ts` to handle older format versions
+5. **MUST** test migration paths thoroughly before deploying changes
+
+#### Migration Strategy:
+When a breaking change to the data structure is required:
+
+1. **Increment the version number** in the export format (e.g., `1.0.0` → `2.0.0`)
+2. **Add migration logic** in the `loadLocations()` and `importData()` functions:
+   ```typescript
+   // Example migration from v1.0.0 to v2.0.0
+   if (!data.version || data.version === '1.0.0') {
+     locations = migrateV1ToV2(locations);
+   }
+   ```
+3. **Document the migration** in comments explaining what changed and why
+4. **Test with real exports** from previous versions to ensure no data loss
+5. **Keep migration code indefinitely** - never remove old migration logic
+
+#### Current Migrations Implemented:
+- **resourceExtractions → resourceExtractionLines**: Ensures all locations have the `resourceExtractionLines` array (even if empty)
+- **exports field**: Ensures all locations have the `exports` array (even if empty)
+
+#### When Adding New Fields:
+- **Optional fields**: Can be added without version bump, but must have safe defaults in migration logic
+- **Required fields**: MUST bump version and provide migration to populate the field for old data
+
+**Never assume all users will re-export their data. Always support importing older format versions.**
 
 ## Recipe Data Source
 - Include recipes.json file in the project with all Satisfactory recipes
