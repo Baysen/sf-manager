@@ -53,7 +53,7 @@ const getPurityVariant = (purity: string): 'default' | 'secondary' | 'destructiv
 
 <template>
   <Card class="hover:border-muted-foreground/50 transition-colors">
-    <CardContent class="p-4">
+    <CardContent class="p-3">
       <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-3">
           <ResourceIcon :resource-key="resource.key_name" size="md" />

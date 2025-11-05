@@ -29,7 +29,7 @@ const handleDelete = () => {
 
 <template>
   <Card class="hover:border-muted-foreground/50 transition-colors">
-    <CardContent class="p-4">
+    <CardContent class="p-3">
       <div class="flex items-start justify-between">
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-3">

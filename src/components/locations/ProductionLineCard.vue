@@ -35,7 +35,7 @@ const getTotalPower = () => {
 
 <template>
   <Card class="hover:border-muted-foreground/50 transition-colors">
-    <CardContent class="p-4">
+    <CardContent class="p-3">
       <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-3">
           <ResourceIcon v-if="recipe.outputs[0]" :resource-key="recipe.outputs[0].resource" size="md" />
