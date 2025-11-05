@@ -6,9 +6,8 @@ A web application to track and manage multiple factory locations in Satisfactory
 ## Tech Stack
 - **Frontend Framework**: Vue.js 3.5.13 (Composition API with `<script setup>`)
 - **Build Tool**: Vite
-- **UI Library**: Preline UI v3.2.1
+- **UI Library**: shadcn-vue (built with Reka UI and Tailwind CSS)
 - **CSS Framework**: Tailwind CSS v4.0 (via @tailwindcss/vite plugin)
-- **Additional Plugin**: @tailwindcss/forms (required by Preline UI)
 - **Data Persistence**: LocalStorage with JSON export/import functionality
 - **Language**: TypeScript
 
@@ -28,33 +27,36 @@ A web application to track and manage multiple factory locations in Satisfactory
 2. **MUST** use TypeScript for all component logic
 3. **DO NOT** use Options API unless absolutely necessary
 
-#### Preline UI Requirements:
-1. **MUST** import `preline/variants.css` in CSS: `@import 'preline/variants.css';`
-2. **MUST** use `@source` directive to include Preline JS: `@source '../../node_modules/preline/dist/*.js';`
-3. **MUST** import `'preline/preline'` in main.ts for TypeScript support
-4. **MUST** initialize with `window.HSStaticMethods.autoInit()` after route changes
-5. **MUST** reference official Preline UI documentation for component markup
+#### shadcn-vue Requirements:
+1. **MUST** use Tailwind CSS v4.0 (see dedicated docs: https://www.shadcn-vue.com/docs/tailwind-v4.html)
+2. **MUST** copy components into `src/components/ui/` directory using the shadcn-vue CLI
+3. **MUST** configure path aliases in `vite.config.ts` and `tsconfig.json` (typically `@/` → `./src/`)
+4. **MUST** reference official shadcn-vue documentation for component implementation
+5. **DO NOT** install shadcn-vue as an npm package - it's a CLI tool that copies components into your project
+6. **Embrace shadcn-vue patterns** - don't force old UI patterns, use shadcn-vue's recommended approach
 
 **When in doubt, ALWAYS check the official documentation for the current version before writing code.**
 
 ## Core Features
 
-### MVP (Phase 1)
-1. Recipe management system with all Satisfactory recipes ✅
-2. Multi-location factory tracking ✅
-3. Production line management per location ✅
-4. Resource balance calculations per location ✅
-5. Overclocking support ✅
-6. Power consumption tracking ✅
-7. Local storage persistence ✅
-8. JSON export/import functionality ✅
-9. Icons for all resources ✅
+### MVP (Phase 1) - Implemented
+1. Recipe management system with all Satisfactory recipes
+2. Multi-location factory tracking
+3. Production line management per location
+4. Resource balance calculations per location
+5. Overclocking support
+6. Power consumption tracking
+7. Local storage persistence
+8. JSON export/import functionality
+9. Icons for all resources
+10. Collapsible sidebar navigation
+11. Resource flow tracking between locations
 
 ### Post-MVP (Phase 2)
-- Resource flow tracking between locations ✅
-- Alphabetical sorting of all lists ✅
-- Better visualization of alternate recipes in dropdowns ✅
-- Split resource and recipe selection into separate dropdowns for easier use ✅
+- Enhanced resource flow visualization
+- Alphabetical sorting of all lists
+- Better visualization of alternate recipes in dropdowns
+- Split resource and recipe selection into separate dropdowns for easier use
 - Ability to drag and drop sort lists
 - Add power creation machines
 - Limit resource extraction machines to the resources they can actually extract
@@ -170,15 +172,23 @@ The recipe and machine data is located in source-data.json
 
 ### Navigation Structure
 ```
-Main Navigation (Top)
-├── Locations
-└── Available Recipes
-
-Location View (when "Locations" is active)
-├── Location Tabs (horizontal tabs for each location)
+Sidebar Navigation (Left, collapsible)
+├── App Header
+│   ├── App Icon (Factory)
+│   └── App Title (Satisfactory Factory Manager)
+├── Main Navigation
+│   ├── Locations
+│   └── Available Recipes
+├── Location List (when "Locations" is active)
+│   ├── Location 1
+│   ├── Location 2
 │   └── [+ Add Location button]
-│
-└── Location Content (for selected tab)
+└── Footer
+    ├── Export Data
+    └── Import Data
+
+Main Content Area
+└── Location Content (when location is selected)
     ├── Left Panel (70%)
     │   ├── Resource Extractions List
     │   │   ├── [+ Add Resource Extraction button]
@@ -456,43 +466,118 @@ On each location, imports are displayed in the Resource Summary but cannot be di
 - Category tags (Mining, Smelting, Construction, Advanced Manufacturing, etc.)
 - Filter recipes by tier and category
 
+## Design System & UI Components
+
+### shadcn-vue Integration
+The application uses [shadcn-vue](https://www.shadcn-vue.com/) as its component library, built on Reka UI and Tailwind CSS v4.
+
+#### Why shadcn-vue?
+- **Vue 3 Native**: Built specifically for Vue 3 with proper lifecycle management
+- **Copy-Paste Components**: Components live in your codebase (`src/components/ui/`), giving you full control
+- **Tailwind CSS v4**: First-class support for the latest Tailwind features
+- **Accessible**: Built with accessibility in mind using Reka UI primitives
+- **Customizable**: Easy to modify components to fit your needs
+- **Type-Safe**: Full TypeScript support out of the box
+
+#### Setup & Configuration
+The project uses shadcn-vue's Tailwind v4 configuration:
+- CLI tool: `npx shadcn-vue@latest` for adding components
+- Path aliases: `@/` → `./src/`
+- Theme: CSS variables for colors, defined in `src/assets/main.css`
+- Dark mode: Default, using OKLCH color space
+
+#### Components Used
+- **Layout**: Sidebar (collapsible), SidebarProvider, Card
+- **Forms**: Dialog, Select, Input, Label, Button
+- **Display**: Badge, Separator
+- **Icons**: Lucide Vue Next
+
+#### Theme System
+Colors are defined using CSS custom properties in `src/assets/main.css`:
+```css
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.7176 0.221 264.4);
+  /* ... more theme variables */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* ... dark mode overrides */
+}
+```
+
+Use theme tokens in components:
+- `text-foreground` / `text-muted-foreground` for text
+- `bg-card` / `bg-background` for backgrounds
+- `border-border` for borders
+- `text-primary` for accent colors
+- `text-destructive` for errors
+- `text-chart-4` for highlights (yellow)
+
+#### Adding New Components
+```bash
+npx shadcn-vue@latest add [component-name]
+```
+
+This copies the component into `src/components/ui/[component-name]/`, where you can customize it as needed.
+
 ## Development Notes
 - Use Vue 3 Composition API with `<script setup>` syntax
 - Use TypeScript for type safety
 - Component structure should be modular and reusable
 - Responsive design (mobile-friendly)
-- **Design System**: Use Preline UI's **dark mode** as the default theme
-- **Component Usage**: Stick to Preline's ready-made components as much as possible
-- Always reference Preline UI documentation for component implementation
-- Tailwind CSS v4.0 for utility styling
+- Always reference shadcn-vue documentation for component implementation
+- Use Lucide icons for consistency (`lucide-vue-next`)
+- Follow shadcn-vue patterns - components are meant to be copied and customized
 
-## File Structure Suggestion
+## File Structure
 ```
 src/
 ├── components/
-│   ├── locations/
-│   │   ├── LocationTabs.vue
+│   ├── ui/                          # shadcn-vue components
+│   │   ├── button/
+│   │   ├── card/
+│   │   ├── dialog/
+│   │   ├── input/
+│   │   ├── label/
+│   │   ├── select/
+│   │   ├── badge/
+│   │   └── sidebar/
+│   ├── locations/                   # Location-specific components
+│   │   ├── LocationView.vue
 │   │   ├── ProductionLineCard.vue
 │   │   ├── ProductionLineModal.vue
+│   │   ├── ResourceExtractionCard.vue
+│   │   ├── ResourceExtractionModal.vue
+│   │   ├── ResourceExportCard.vue
+│   │   ├── ResourceExportModal.vue
 │   │   ├── ResourceSummary.vue
 │   │   └── PowerSummary.vue
-│   ├── recipes/
-│   │   ├── RecipeGrid.vue
-│   │   ├── RecipeCard.vue
-│   │   └── RecipeFilter.vue
-│   └── common/
-│       ├── AppNavigation.vue
-│       └── ExportImport.vue
-├── composables/
+│   ├── recipes/                     # Recipe browser components
+│   │   └── RecipesView.vue
+│   ├── common/                      # Shared components
+│   │   └── ResourceIcon.vue
+│   ├── AppSidebar.vue              # Main navigation sidebar
+│   ├── NavLocations.vue            # Location list in sidebar
+│   └── NavFooter.vue               # Export/Import in sidebar
+├── composables/                     # Vue composables
 │   ├── useLocations.ts
 │   ├── useRecipes.ts
+│   ├── useMiners.ts
 │   ├── useStorage.ts
 │   └── useCalculations.ts
-├── types/
+├── types/                           # TypeScript definitions
 │   ├── recipe.ts
 │   ├── location.ts
 │   └── productionLine.ts
-├── data/
-│   └── recipes.json
-└── App.vue
+├── lib/                             # Utility functions
+│   └── utils.ts
+├── data/                            # Static data
+│   └── source-data.json
+├── assets/
+│   └── main.css                    # Tailwind & theme config
+└── App.vue                         # Root component
 ```

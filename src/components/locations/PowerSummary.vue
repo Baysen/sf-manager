@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { PowerBreakdown } from '../../types/location';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const props = defineProps<{
   breakdown: PowerBreakdown[];
@@ -16,29 +17,32 @@ const formatPower = (power: number) => {
 </script>
 
 <template>
-  <div class="bg-gray-800 rounded-lg p-3 border border-gray-700">
-    <h3 class="text-base font-semibold text-white mb-3">Power Summary</h3>
-
-    <div class="mb-3 pb-3 border-b border-gray-700">
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-gray-400">Total Consumption:</span>
-        <span class="text-base font-bold text-yellow-400">{{ formatPower(totalPower) }} MW</span>
+  <Card>
+    <CardHeader class="pb-3">
+      <CardTitle class="text-base">Power Summary</CardTitle>
+    </CardHeader>
+    <CardContent class="pb-4">
+      <div class="mb-3 pb-3 border-b">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-muted-foreground">Total Consumption:</span>
+          <span class="text-base font-bold text-chart-4">{{ formatPower(totalPower) }} MW</span>
+        </div>
       </div>
-    </div>
 
-    <div v-if="breakdown.length === 0" class="text-gray-400 text-xs">
-      No power consumption yet
-    </div>
-
-    <div v-else class="space-y-2">
-      <div
-        v-for="item in breakdown"
-        :key="item.machineType"
-        class="flex justify-between items-center text-xs"
-      >
-        <span class="text-gray-400">{{ item.machineType }}:</span>
-        <span class="text-white font-medium">{{ formatPower(item.consumption) }} MW</span>
+      <div v-if="breakdown.length === 0" class="text-muted-foreground text-xs">
+        No power consumption yet
       </div>
-    </div>
-  </div>
+
+      <div v-else class="space-y-2">
+        <div
+          v-for="item in breakdown"
+          :key="item.machineType"
+          class="flex justify-between items-center text-xs"
+        >
+          <span class="text-muted-foreground">{{ item.machineType }}:</span>
+          <span class="font-medium">{{ formatPower(item.consumption) }} MW</span>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
 </template>

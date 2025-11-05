@@ -1,54 +1,101 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import AppNavigation from './components/common/AppNavigation.vue';
-import LocationTabs from './components/locations/LocationTabs.vue';
-import LocationView from './components/locations/LocationView.vue';
-import RecipesView from './components/recipes/RecipesView.vue';
-import { useLocations } from './composables/useLocations';
+import { ref } from 'vue'
+import { useLocations } from './composables/useLocations'
+import AppSidebar from './components/AppSidebar.vue'
+import LocationView from './components/locations/LocationView.vue'
+import RecipesView from './components/recipes/RecipesView.vue'
 
-const activeView = ref<'locations' | 'recipes'>('locations');
-const { locations, activeLocationId, addLocation } = useLocations();
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
-const handleTabChange = (tab: 'locations' | 'recipes') => {
-  activeView.value = tab;
-};
+const activeView = ref<'locations' | 'recipes'>('locations')
+const { addLocation } = useLocations()
 
-const handleSelectLocation = (id: string) => {
-  activeLocationId.value = id;
-};
+// Add location dialog state
+const showAddLocationDialog = ref(false)
+const newLocationName = ref('')
 
-const handleAddLocation = (name: string) => {
-  addLocation(name);
-};
+const handleViewChange = (view: 'locations' | 'recipes') => {
+  activeView.value = view
+}
 
-// Preline reinitialization helper
-// This ensures Preline components initialize properly after Vue renders them
-onMounted(() => {
-  setTimeout(() => {
-    if (window.HSStaticMethods) {
-      window.HSStaticMethods.autoInit();
-    }
-  }, 100);
-});
+const openAddLocationDialog = () => {
+  showAddLocationDialog.value = true
+  newLocationName.value = ''
+}
+
+const handleAddLocation = () => {
+  if (newLocationName.value.trim()) {
+    addLocation(newLocationName.value.trim())
+    showAddLocationDialog.value = false
+    newLocationName.value = ''
+  }
+}
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    handleAddLocation()
+  }
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-900 text-gray-100">
-    <AppNavigation @tab-change="handleTabChange" />
+  <SidebarProvider>
+    <AppSidebar
+      :active-view="activeView"
+      @view-change="handleViewChange"
+      @add-location="openAddLocationDialog"
+    />
+    <SidebarInset>
+      <div class="flex flex-1 flex-col">
+        <LocationView v-if="activeView === 'locations'" />
+        <RecipesView v-else-if="activeView === 'recipes'" />
+      </div>
+    </SidebarInset>
 
-    <div v-if="activeView === 'locations'">
-      <LocationTabs
-        :locations="locations"
-        :active-location-id="activeLocationId"
-        @select-location="handleSelectLocation"
-        @add-location="handleAddLocation"
-      />
-      <LocationView />
-    </div>
+    <!-- Add Location Dialog -->
+    <Dialog v-model:open="showAddLocationDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add New Location</DialogTitle>
+          <DialogDescription>
+            Create a new factory location to track production lines and resources.
+          </DialogDescription>
+        </DialogHeader>
 
-    <div v-else-if="activeView === 'recipes'">
-      <RecipesView />
-    </div>
-  </div>
+        <div class="py-4">
+          <Input
+            v-model="newLocationName"
+            placeholder="Location name (e.g., Iron Smelting Complex)"
+            @keydown="handleKeydown"
+            autofocus
+          />
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            @click="showAddLocationDialog = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            @click="handleAddLocation"
+            :disabled="!newLocationName.trim()"
+          >
+            Add Location
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </SidebarProvider>
 </template>
-
