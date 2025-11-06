@@ -21,11 +21,11 @@ const netPowerStatus = computed(() => {
 const netPowerColor = computed(() => {
   switch (netPowerStatus.value) {
     case 'surplus':
-      return 'text-green-600 dark:text-green-400';
+      return 'text-chart-3';
     case 'deficit':
-      return 'text-red-600 dark:text-red-400';
+      return 'text-chart-5';
     default:
-      return 'text-yellow-600 dark:text-yellow-400';
+      return 'text-chart-4';
   }
 });
 
@@ -46,7 +46,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
       <div class="mb-3 pb-3 border-b">
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs text-muted-foreground">Total Available:</span>
-          <span class="text-base font-bold text-green-600 dark:text-green-400">
+          <span class="text-base font-bold text-chart-3">
             {{ formatPower(summary.totalGeneration) }} MW
           </span>
         </div>
@@ -58,7 +58,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
               <Globe class="h-3 w-3" />
               Global Grid:
             </span>
-            <span class="font-medium text-green-600 dark:text-green-400">
+            <span class="font-medium text-chart-3">
               {{ formatPower(summary.globalGridGeneration) }} MW
             </span>
           </div>
@@ -71,7 +71,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
               <Zap class="h-3 w-3" />
               Local Only:
             </span>
-            <span class="font-medium text-green-600 dark:text-green-400">
+            <span class="font-medium text-chart-3">
               {{ formatPower(summary.localGeneration) }} MW
             </span>
           </div>
@@ -84,7 +84,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
               class="flex justify-between items-center text-xs"
             >
               <span class="text-muted-foreground">{{ item.machineType }}:</span>
-              <span class="font-medium text-green-600 dark:text-green-400">
+              <span class="font-medium text-chart-3">
                 {{ formatPower(item.consumption) }} MW
               </span>
             </div>
@@ -101,7 +101,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
       <div class="mb-3 pb-3 border-b">
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs text-muted-foreground">Local Consumption:</span>
-          <span class="text-base font-bold text-red-600 dark:text-red-400">
+          <span class="text-base font-bold text-chart-5">
             {{ formatPower(summary.totalConsumption) }} MW
           </span>
         </div>
@@ -114,7 +114,7 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
             class="flex justify-between items-center text-xs"
           >
             <span class="text-muted-foreground">{{ item.machineType }}:</span>
-            <span class="font-medium text-red-600 dark:text-red-400">
+            <span class="font-medium text-chart-5">
               {{ formatPower(item.consumption) }} MW
             </span>
           </div>

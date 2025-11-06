@@ -264,13 +264,13 @@ const getSomersloopPresets = computed(() => {
                   <div v-for="output in selectedRecipe.outputs" :key="output.resource" class="text-sm flex items-center gap-2">
                     <ResourceIcon :resource-key="output.resource" size="sm" />
                     <span>{{ output.resource }}:</span>
-                    <span class="text-green-500">{{ output.amount }}/min</span>
+                    <span class="text-chart-3">{{ output.amount }}/min</span>
                   </div>
                 </div>
               </div>
             </div>
             <div class="mt-3 text-sm text-muted-foreground">
-              Power: <span class="text-yellow-500">{{ selectedRecipe.powerConsumption }} MW</span> per machine at 100%
+              Power: <span class="text-chart-4">{{ selectedRecipe.powerConsumption }} MW</span> per machine at 100%
             </div>
           </div>
         </div>
@@ -379,9 +379,9 @@ const getSomersloopPresets = computed(() => {
                   </div>
                 </div>
                 <div v-if="config.somersloops && config.somersloops > 0 && selectedRecipe?.somersloopSlots" class="text-xs text-muted-foreground mt-2">
-                  Production: <span class="text-green-500 font-semibold">{{ ((1 + config.somersloops / selectedRecipe.somersloopSlots) * 100).toFixed(0) }}%</span>
+                  Production: <span class="text-chart-3 font-semibold">{{ ((1 + config.somersloops / selectedRecipe.somersloopSlots) * 100).toFixed(0) }}%</span>
                   <span class="mx-2">•</span>
-                  Power: <span class="text-yellow-500 font-semibold">{{ Math.pow(2, config.somersloops).toFixed(1) }}x</span>
+                  Power: <span class="text-chart-4 font-semibold">{{ Math.pow(2, config.somersloops).toFixed(1) }}x</span>
                 </div>
               </div>
             </div>

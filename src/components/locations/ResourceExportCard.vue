@@ -55,12 +55,12 @@ const handleDelete = () => {
             <div class="flex items-center gap-2">
               <TrendingUp class="h-4 w-4 text-muted-foreground" />
               <span class="text-muted-foreground">Export Amount:</span>
-              <span :class="['font-semibold', hasWarning ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400']">
+              <span :class="['font-semibold', hasWarning ? 'text-chart-4' : 'text-chart-3']">
                 {{ calculatedAmount.toFixed(1) }}/min
               </span>
             </div>
 
-            <div v-if="hasWarning" class="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/30 rounded-md px-2 py-1.5 mt-2">
+            <div v-if="hasWarning" class="text-xs text-chart-4 bg-chart-4/10 border border-chart-4/30 rounded-md px-2 py-1.5 mt-2">
               Warning: Export may exceed available surplus
             </div>
           </div>

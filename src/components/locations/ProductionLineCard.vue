@@ -120,7 +120,7 @@ const hasSomersloops = computed(() => {
             <div v-for="output in recipe.outputs" :key="output.resource" class="flex items-center gap-1.5">
               <ResourceIcon :resource-key="output.resource" size="sm" />
               <span class="text-muted-foreground">{{ output.resource }}:</span>
-              <span class="text-green-600 dark:text-green-400 font-medium">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
+              <span class="text-chart-3 font-medium">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
             </div>
           </div>
         </div>
@@ -136,10 +136,10 @@ const hasSomersloops = computed(() => {
 <style scoped>
 @keyframes somersloop-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgb(168 85 247 / 0.05), 0 10px 15px -3px rgb(168 85 247 / 0.05);
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.05), 0 10px 15px -3px hsl(var(--primary) / 0.05);
   }
   50% {
-    box-shadow: 0 0 0 2px rgb(168 85 247 / 0.1), 0 10px 15px -3px rgb(168 85 247 / 0.1);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1), 0 10px 15px -3px hsl(var(--primary) / 0.1);
   }
 }
 

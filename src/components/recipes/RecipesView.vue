@@ -115,7 +115,7 @@ const {
                 <div v-for="output in recipe.outputs" :key="output.resource" class="text-xs flex items-center gap-1.5">
                   <ResourceIcon :resource-key="output.resource" size="sm" />
                   <span class="text-muted-foreground">{{ output.resource }}:</span>
-                  <span class="text-green-600 dark:text-green-400 font-medium ml-auto">{{ output.amount }}/min</span>
+                  <span class="text-chart-3 font-medium ml-auto">{{ output.amount }}/min</span>
                 </div>
               </div>
             </div>
