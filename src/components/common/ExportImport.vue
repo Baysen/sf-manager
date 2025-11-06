@@ -87,7 +87,7 @@ const showError = (message: string) => {
     <!-- Success Message -->
     <div
       v-if="successMessage"
-      class="text-sm text-green-400 animate-fade-in"
+      class="text-sm text-chart-3 animate-fade-in"
     >
       {{ successMessage }}
     </div>
@@ -95,7 +95,7 @@ const showError = (message: string) => {
     <!-- Error Message -->
     <div
       v-if="errorMessage"
-      class="text-sm text-red-400 animate-fade-in"
+      class="text-sm text-destructive animate-fade-in"
     >
       {{ errorMessage }}
     </div>

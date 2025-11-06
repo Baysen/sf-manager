@@ -98,13 +98,13 @@ const getRecipeName = () => {
       <div v-if="getRecipe()" class="mb-3 text-xs space-y-1">
         <div v-for="input in getRecipe()!.inputs" :key="input.resource" class="flex items-center justify-between">
           <span class="text-muted-foreground">{{ input.resource }}:</span>
-          <span class="text-red-600 dark:text-red-400 font-medium">
+          <span class="text-chart-5 font-medium">
             -{{ calculateProductionRate(getRecipe()!, powerLine as any, input.resource, true).toFixed(1) }}/min
           </span>
         </div>
         <div v-for="output in getRecipe()!.outputs" :key="output.resource" class="flex items-center justify-between">
           <span class="text-muted-foreground">{{ output.resource }}:</span>
-          <span class="text-green-600 dark:text-green-400 font-medium">
+          <span class="text-chart-3 font-medium">
             +{{ calculateProductionRate(getRecipe()!, powerLine as any, output.resource, false).toFixed(1) }}/min
           </span>
         </div>
@@ -113,7 +113,7 @@ const getRecipeName = () => {
       <div class="flex items-center justify-between text-xs pt-3 border-t">
         <div>
           <span class="text-muted-foreground">Power Generation:</span>
-          <span class="text-green-600 dark:text-green-400 ml-1 font-medium">{{ getPowerGeneration().toFixed(1) }} MW</span>
+          <span class="text-chart-3 ml-1 font-medium">{{ getPowerGeneration().toFixed(1) }} MW</span>
         </div>
       </div>
     </CardContent>

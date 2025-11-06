@@ -237,7 +237,7 @@ const handleClose = () => {
                 type="radio"
                 v-model="formData.mode"
                 value="percentage"
-                class="mr-2 text-blue-600 focus:ring-blue-500"
+                class="mr-2 text-primary focus:ring-ring"
               />
               <span class="text-gray-300">Percentage</span>
             </label>
@@ -246,7 +246,7 @@ const handleClose = () => {
                 type="radio"
                 v-model="formData.mode"
                 value="absolute"
-                class="mr-2 text-blue-600 focus:ring-blue-500"
+                class="mr-2 text-primary focus:ring-ring"
               />
               <span class="text-gray-300">Absolute Amount</span>
             </label>
@@ -272,7 +272,7 @@ const handleClose = () => {
         <div v-if="formData.resource" class="bg-gray-900 rounded-lg p-4 border border-gray-600">
           <p class="text-sm text-gray-300">
             <span class="font-medium">Preview:</span> Will export
-            <span class="text-blue-400 font-semibold">{{ previewAmount.toFixed(1) }}/min</span>
+            <span class="text-primary font-semibold">{{ previewAmount.toFixed(1) }}/min</span>
             of {{ formData.resource }}
           </p>
         </div>
@@ -282,7 +282,7 @@ const handleClose = () => {
           <div
             v-for="(message, index) in validationMessages"
             :key="index"
-            class="text-sm text-red-400 bg-red-900/20 border border-red-800/30 rounded px-3 py-2"
+            class="text-sm text-destructive bg-destructive/10 border border-destructive/30 rounded px-3 py-2"
           >
             {{ message }}
           </div>
@@ -299,7 +299,7 @@ const handleClose = () => {
         <button
           @click="handleSave"
           :disabled="!isValid"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save Export
         </button>

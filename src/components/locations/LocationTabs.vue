@@ -39,8 +39,8 @@ const closeModal = () => {
         :class="[
           'px-4 py-3 text-sm font-medium border-b-2 transition-colors',
           activeLocationId === location.id
-            ? 'border-blue-500 text-blue-500'
-            : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+            ? 'border-primary text-primary'
+            : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
         ]"
       >
         {{ location.name }}
@@ -77,7 +77,7 @@ const closeModal = () => {
         <button
           @click="handleAddLocation"
           :disabled="!newLocationName.trim()"
-          class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+          class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed transition-colors"
         >
           Add Location
         </button>

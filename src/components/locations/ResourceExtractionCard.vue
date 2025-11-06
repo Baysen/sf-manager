@@ -98,7 +98,7 @@ const getPurityVariant = (purity: string): 'default' | 'secondary' | 'destructiv
       <div class="flex items-center justify-between text-xs pt-3 border-t">
         <div>
           <span class="text-muted-foreground">Production:</span>
-          <span class="text-green-600 dark:text-green-400 ml-1 font-medium">{{ getExtractionRate().toFixed(1) }}/min</span>
+          <span class="text-chart-3 ml-1 font-medium">{{ getExtractionRate().toFixed(1) }}/min</span>
         </div>
         <div class="text-right">
           <span class="text-muted-foreground">Power:</span>

@@ -15,7 +15,7 @@ const sortedBalances = computed(() => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'surplus': return 'text-green-600 dark:text-green-400';
+    case 'surplus': return 'text-chart-3';
     case 'deficit': return 'text-destructive';
     case 'balanced': return 'text-chart-4';
     default: return 'text-muted-foreground';
@@ -75,7 +75,7 @@ const formatRate = (rate: number) => {
           <div class="pl-1 space-y-1.5">
             <div>
               <span class="text-muted-foreground">Production:</span>
-              <span class="text-green-600 dark:text-green-400 ml-1 font-medium">+{{ formatRate(balance.production) }}/min</span>
+              <span class="text-chart-3 ml-1 font-medium">+{{ formatRate(balance.production) }}/min</span>
             </div>
 
             <!-- Imports -->
@@ -88,7 +88,7 @@ const formatRate = (rate: number) => {
                 >
                   <span class="text-muted-foreground/70">From</span>
                   <span class="text-primary ml-1">{{ imp.fromLocationName }}</span>:
-                  <span class="text-green-600 dark:text-green-400 ml-1 font-medium">+{{ formatRate(imp.amount) }}/min</span>
+                  <span class="text-chart-3 ml-1 font-medium">+{{ formatRate(imp.amount) }}/min</span>
                 </div>
               </div>
             </div>
