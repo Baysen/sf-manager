@@ -51,6 +51,8 @@ A web application to track and manage multiple factory locations in Satisfactory
 9. Icons for all resources ✅
 10. Collapsible sidebar navigation ✅
 11. Resource flow tracking between locations ✅
+12. Location edit and delete functionality ✅
+13. Pin/favorite locations to keep them at the top ✅
 
 ### Post-MVP (Phase 2)
 - Alphabetical sorting of all lists
@@ -59,11 +61,11 @@ A web application to track and manage multiple factory locations in Satisfactory
 - Ability to switch off production lines and/or whole groups
 - Better visualization of alternate recipes in dropdowns ✅
 - Split resource and recipe selection into separate dropdowns for easier use ✅
-- Add power creation machines
+- Add power creation machines ✅
 - Limit resource extraction machines to the resources they can actually extract
 - Overview page summarizing all locations
 - Accordion-like functionality to be able to collapse sections (Resource Extraction, ...)
-- A way to sort and edit/delete locations
+- Manual sorting of locations (drag and drop)
 - i8n
 
 ### Post-MVP (Phase 3)
@@ -117,6 +119,7 @@ The recipe and machine data is located in source-data.json
 {
   "id": "string (unique)",
   "name": "string",
+  "pinned": "boolean (optional, whether location is pinned/favorited)",
   "productionLines": [
     {
       "id": "string (unique)",
@@ -182,8 +185,20 @@ Sidebar Navigation (Left, collapsible)
 │   ├── Locations
 │   └── Available Recipes
 ├── Location List (when "Locations" is active)
-│   ├── Location 1
-│   ├── Location 2
+│   ├── Pinned Section (if any pinned locations)
+│   │   └── Location Cards
+│   │       ├── Pin icon (filled, always visible)
+│   │       ├── Location name
+│   │       └── [⋮ More menu] (on hover)
+│   │           ├── Edit (opens edit modal)
+│   │           └── Delete (opens confirmation dialog)
+│   ├── Your Locations Section
+│   │   └── Location Cards
+│   │       ├── MapPin icon (fades to Pin on hover)
+│   │       ├── Location name
+│   │       └── [⋮ More menu] (on hover)
+│   │           ├── Edit (opens edit modal)
+│   │           └── Delete (opens confirmation dialog)
 │   └── [+ Add Location button]
 └── Footer
     ├── Export Data
@@ -402,6 +417,71 @@ When a breaking change to the data structure is required:
 - Include recipes.json file in the project with all Satisfactory recipes
 - Load recipes from JSON file on app initialization
 - Recipes are read-only in the app (not editable by user)
+
+## Location Management
+
+### Pin/Favorite Locations
+Locations can be pinned (favorited) to keep them at the top of the sidebar for easy access.
+
+**UI Behavior:**
+- **Unpinned locations**: Display MapPin icon by default
+  - On hover: MapPin fades out, Pin icon fades in
+  - Click icon: Pins the location
+- **Pinned locations**: Always display filled Pin icon (primary color)
+  - Click icon: Unpins the location
+- Pinned locations appear in a separate "Pinned" section at the top of the sidebar
+- Unpinned locations appear in the "Your Locations" section below
+
+**Sorting:**
+- Pinned locations are sorted alphabetically within the "Pinned" section
+- Unpinned locations are sorted alphabetically within the "Your Locations" section
+- Pinned status is persisted to localStorage
+
+**Implementation:**
+- Location interface includes optional `pinned?: boolean` field
+- `toggleLocationPin(id: string)` function toggles the pin state
+- Separate computed properties filter locations into `pinnedLocations` and `unpinnedLocations`
+- Two `SidebarGroup` components display the sections (Pinned section only shows if there are pinned locations)
+
+### Edit Location
+Users can rename locations via an edit modal.
+
+**UI Flow:**
+1. Hover over a location in the sidebar
+2. Click the ellipsis (⋮) menu icon that appears on hover
+3. Select "Edit" from the dropdown menu
+4. Edit modal opens with current location name
+5. Enter new name and click "Save Changes" or press Enter
+
+**Implementation:**
+- `LocationEditModal.vue` component handles the edit UI
+- `updateLocation(id, { name })` function updates the location name
+- Changes are auto-saved to localStorage
+
+### Delete Location
+Users can delete locations with a confirmation dialog to prevent accidental deletion.
+
+**UI Flow:**
+1. Hover over a location in the sidebar
+2. Click the ellipsis (⋮) menu icon
+3. Select "Delete" from the dropdown menu (styled in destructive red)
+4. Confirmation dialog appears with warning message
+5. Click "Delete" to confirm or "Cancel" to abort
+
+**Safety Measures:**
+- Warning message clearly states what will be deleted:
+  - All production lines
+  - All resource extractions
+  - All power generation lines
+  - All exports from this location
+- Destructive action styling (red) to indicate danger
+- Cannot be undone
+
+**Implementation:**
+- AlertDialog component displays the confirmation
+- `deleteLocation(id)` function removes the location
+- If the deleted location was active, switches to the first remaining location
+- Changes are auto-saved to localStorage
 
 ## Resource Flow Between Locations (Phase 2)
 
