@@ -23,6 +23,18 @@ data.miners.forEach(miner => {
   });
 });
 
+// Also add power generators to the map
+data.power_generators.forEach(generator => {
+  categoryToBuildingMap.set(generator.category, {
+    name: generator.name,
+    key_name: generator.key_name,
+    category: generator.category,
+    power: 0, // Power generators don't consume power during operation
+    somersloop_slots: null,
+    max: 1
+  });
+});
+
 // Create a map of item/fluid keys to names
 const resourceNameMap = new Map<string, string>();
 data.items.forEach(item => {

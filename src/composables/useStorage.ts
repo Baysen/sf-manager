@@ -15,10 +15,11 @@ export function useStorage() {
 
     const locations = JSON.parse(data) as Location[];
 
-    // Migrate old data: ensure all locations have resourceExtractionLines and exports
+    // Migrate old data: ensure all locations have resourceExtractionLines, powerGenerationLines, and exports
     return locations.map(location => ({
       ...location,
       resourceExtractionLines: location.resourceExtractionLines || [],
+      powerGenerationLines: location.powerGenerationLines || [],
       exports: location.exports || []
     }));
   };
@@ -77,6 +78,7 @@ export function useStorage() {
           const locations = data.locations.map(location => ({
             ...location,
             resourceExtractionLines: location.resourceExtractionLines || [],
+            powerGenerationLines: location.powerGenerationLines || [],
             exports: location.exports || []
           }));
 

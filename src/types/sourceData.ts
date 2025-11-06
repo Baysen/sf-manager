@@ -17,6 +17,17 @@ export interface SourceMiner {
   base_rate: number; // per minute
 }
 
+export interface SourcePowerGenerator {
+  name: string;
+  key_name: string;
+  category: string;
+  base_power: number; // MW generated at 100%
+  power_consumption: number; // MW consumed (usually 0)
+  type: 'fuel' | 'geothermal'; // fuel-based or geothermal
+  variable_power?: boolean; // for geothermal
+  power_range?: [number, number]; // [min, max] for variable power
+}
+
 export interface SourceItem {
   name: string;
   key_name: string;
@@ -52,6 +63,7 @@ export interface SourceData {
   pipes: unknown[];
   buildings: SourceBuilding[];
   miners: SourceMiner[];
+  power_generators: SourcePowerGenerator[];
   items: SourceItem[];
   fluids: SourceFluid[];
   resources: SourceResource[];

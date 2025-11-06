@@ -3,12 +3,15 @@ import { computed, ref } from 'vue';
 import { useLocations } from '../../composables/useLocations';
 import { useRecipes } from '../../composables/useRecipes';
 import { useMiners } from '../../composables/useMiners';
+import { usePowerGenerators } from '../../composables/usePowerGenerators';
 import { useCalculations } from '../../composables/useCalculations';
-import type { ProductionLine, ResourceExtractionLine, ResourceExport } from '../../types/location';
+import type { ProductionLine, ResourceExtractionLine, PowerGenerationLine, ResourceExport } from '../../types/location';
 import ResourceExtractionCard from './ResourceExtractionCard.vue';
 import ResourceExtractionModal from './ResourceExtractionModal.vue';
 import ProductionLineCard from './ProductionLineCard.vue';
 import ProductionLineModal from './ProductionLineModal.vue';
+import PowerGenerationCard from './PowerGenerationCard.vue';
+import PowerGenerationModal from './PowerGenerationModal.vue';
 import ResourceExportCard from './ResourceExportCard.vue';
 import ResourceExportModal from './ResourceExportModal.vue';
 import ResourceSummary from './ResourceSummary.vue';
@@ -17,10 +20,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus } from 'lucide-vue-next';
 
-const { locations, activeLocation, addProductionLine, updateProductionLine, deleteProductionLine, addResourceExtractionLine, updateResourceExtractionLine, deleteResourceExtractionLine, addResourceExport, updateResourceExport, deleteResourceExport } = useLocations();
+const { locations, activeLocation, addProductionLine, updateProductionLine, deleteProductionLine, addResourceExtractionLine, updateResourceExtractionLine, deleteResourceExtractionLine, addPowerGenerationLine, updatePowerGenerationLine, deletePowerGenerationLine, addResourceExport, updateResourceExport, deleteResourceExport } = useLocations();
 const { allRecipes, getRecipeById } = useRecipes();
 const { getMinerByKeyName, getResourceByKeyName } = useMiners();
-const { calculateResourceBalances, calculatePowerBreakdown } = useCalculations();
+const { getGeneratorByKeyName } = usePowerGenerators();
+const { calculateResourceBalances, calculatePowerSummary } = useCalculations();
 
 // Production line modal state
 const isModalOpen = ref(false);
@@ -29,6 +33,10 @@ const editingProductionLine = ref<ProductionLine | null>(null);
 // Resource extraction modal state
 const isExtractionModalOpen = ref(false);
 const editingExtractionLine = ref<ResourceExtractionLine | null>(null);
+
+// Power generation modal state
+const isPowerGenerationModalOpen = ref(false);
+const editingPowerLine = ref<PowerGenerationLine | null>(null);
 
 // Resource export modal state
 const isExportModalOpen = ref(false);
@@ -61,6 +69,18 @@ const validExtractionLines = computed(() => {
     });
 });
 
+// Filter power generation lines to only show those with valid generators, sorted alphabetically by generator name
+const validPowerGenerationLines = computed(() => {
+  if (!activeLocation.value) return [];
+  return activeLocation.value.powerGenerationLines
+    .filter(line => getGeneratorByKeyName(line.generatorType))
+    .sort((a, b) => {
+      const generatorA = getGeneratorByKeyName(a.generatorType)?.name || '';
+      const generatorB = getGeneratorByKeyName(b.generatorType)?.name || '';
+      return generatorA.localeCompare(generatorB);
+    });
+});
+
 const resourceBalances = computed(() => {
   if (!activeLocation.value) return [];
   return calculateResourceBalances(
@@ -72,12 +92,19 @@ const resourceBalances = computed(() => {
   );
 });
 
-const powerBreakdown = computed(() => {
-  if (!activeLocation.value) return [];
-  return calculatePowerBreakdown(
+const powerSummary = computed(() => {
+  if (!activeLocation.value) return {
+    totalGeneration: 0,
+    totalConsumption: 0,
+    netPower: 0,
+    generationBreakdown: [],
+    consumptionBreakdown: []
+  };
+  return calculatePowerSummary(
     activeLocation.value.productionLines,
     allRecipes.value,
-    activeLocation.value.resourceExtractionLines
+    activeLocation.value.resourceExtractionLines,
+    activeLocation.value.powerGenerationLines
   );
 });
 
@@ -155,6 +182,45 @@ const handleExtractionModalSave = (line: Omit<ResourceExtractionLine, 'id'>) => 
   } else {
     // Add new extraction line
     addResourceExtractionLine(activeLocation.value.id, line);
+  }
+};
+
+// Power generation handlers
+const handleEditPowerGeneration = (lineId: string) => {
+  if (!activeLocation.value) return;
+  const line = activeLocation.value.powerGenerationLines.find(l => l.id === lineId);
+  if (line) {
+    editingPowerLine.value = line;
+    isPowerGenerationModalOpen.value = true;
+  }
+};
+
+const handleDeletePowerGeneration = (lineId: string) => {
+  if (!activeLocation.value) return;
+  if (confirm('Are you sure you want to delete this power generator?')) {
+    deletePowerGenerationLine(activeLocation.value.id, lineId);
+  }
+};
+
+const handleAddPowerGeneration = () => {
+  editingPowerLine.value = null;
+  isPowerGenerationModalOpen.value = true;
+};
+
+const handlePowerGenerationModalClose = () => {
+  isPowerGenerationModalOpen.value = false;
+  editingPowerLine.value = null;
+};
+
+const handlePowerGenerationModalSave = (line: Omit<PowerGenerationLine, 'id'>) => {
+  if (!activeLocation.value) return;
+
+  if (editingPowerLine.value) {
+    // Update existing power generation line
+    updatePowerGenerationLine(activeLocation.value.id, editingPowerLine.value.id, line);
+  } else {
+    // Add new power generation line
+    addPowerGenerationLine(activeLocation.value.id, line);
   }
 };
 
@@ -295,6 +361,34 @@ const getLocationName = (locationId: string): string => {
         </div>
       </div>
 
+      <!-- Power Generation Section -->
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-semibold">Power Generation</h2>
+          <Button @click="handleAddPowerGeneration" size="sm" variant="secondary">
+            <Plus class="h-4 w-4 mr-2" />
+            Add Generator
+          </Button>
+        </div>
+
+        <Card v-if="activeLocation.powerGenerationLines.length === 0">
+          <CardContent class="p-8 text-center">
+            <p class="text-muted-foreground">No power generators yet. Add biomass burners, coal generators, or other power sources!</p>
+          </CardContent>
+        </Card>
+
+        <div v-else class="space-y-4">
+          <PowerGenerationCard
+            v-for="line in validPowerGenerationLines"
+            :key="line.id"
+            :power-line="line"
+            :generator="getGeneratorByKeyName(line.generatorType)!"
+            @edit="handleEditPowerGeneration"
+            @delete="handleDeletePowerGeneration"
+          />
+        </div>
+      </div>
+
       <!-- Resource Exports Section -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
@@ -329,7 +423,7 @@ const getLocationName = (locationId: string): string => {
     <!-- Right Panel (Summaries) -->
     <div class="space-y-4">
       <ResourceSummary :balances="resourceBalances" />
-      <PowerSummary :breakdown="powerBreakdown" />
+      <PowerSummary :summary="powerSummary" />
     </div>
 
     <!-- Resource Extraction Modal -->
@@ -346,6 +440,14 @@ const getLocationName = (locationId: string): string => {
       :production-line="editingProductionLine"
       @close="handleModalClose"
       @save="handleModalSave"
+    />
+
+    <!-- Power Generation Modal -->
+    <PowerGenerationModal
+      :is-open="isPowerGenerationModalOpen"
+      :power-line="editingPowerLine"
+      @close="handlePowerGenerationModalClose"
+      @save="handlePowerGenerationModalSave"
     />
 
     <!-- Resource Export Modal -->
