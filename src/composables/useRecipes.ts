@@ -90,7 +90,7 @@ const allRecipes = ref<Recipe[]>(
 
 export function useRecipes() {
   const searchQuery = ref('');
-  const machineFilter = ref<string>('');
+  const machineFilter = ref<string>('all');
   const alternateFilter = ref<'all' | 'standard' | 'alternate'>('all');
 
   // Get unique machine types for filtering
@@ -114,7 +114,7 @@ export function useRecipes() {
     }
 
     // Machine type filter
-    if (machineFilter.value) {
+    if (machineFilter.value && machineFilter.value !== 'all') {
       recipes = recipes.filter(recipe => recipe.machine === machineFilter.value);
     }
 
