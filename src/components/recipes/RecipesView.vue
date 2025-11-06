@@ -45,7 +45,7 @@ const {
               <SelectValue placeholder="All Machines" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Machines</SelectItem>
+              <SelectItem value="all">All Machines</SelectItem>
               <SelectItem v-for="machine in machineTypes" :key="machine" :value="machine">
                 {{ machine }}
               </SelectItem>
