@@ -50,6 +50,13 @@ export function useLocations() {
     }
   };
 
+  const toggleLocationPin = (id: string) => {
+    const location = locations.value.find(l => l.id === id);
+    if (location) {
+      location.pinned = !location.pinned;
+    }
+  };
+
   const addProductionLine = (locationId: string, productionLine: Omit<ProductionLine, 'id'>) => {
     const location = locations.value.find(l => l.id === locationId);
     if (location) {
@@ -195,6 +202,7 @@ export function useLocations() {
     addLocation,
     updateLocation,
     deleteLocation,
+    toggleLocationPin,
     addProductionLine,
     updateProductionLine,
     deleteProductionLine,
