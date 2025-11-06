@@ -180,6 +180,50 @@
             "power": 20
         }
     ],
+    "power_generators": [
+        {
+            "name": "Biomass Burner",
+            "key_name": "biomass-burner",
+            "category": "biomass-power",
+            "base_power": 30,
+            "power_consumption": 0,
+            "type": "fuel"
+        },
+        {
+            "name": "Coal Generator",
+            "key_name": "coal-generator",
+            "category": "coal-power",
+            "base_power": 75,
+            "power_consumption": 0,
+            "type": "fuel"
+        },
+        {
+            "name": "Fuel Generator",
+            "key_name": "fuel-generator",
+            "category": "fuel-power",
+            "base_power": 150,
+            "power_consumption": 0,
+            "type": "fuel"
+        },
+        {
+            "name": "Geothermal Generator",
+            "key_name": "geothermal-generator",
+            "category": "geothermal-power",
+            "base_power": 200,
+            "power_consumption": 0,
+            "type": "geothermal",
+            "variable_power": true,
+            "power_range": [50, 600]
+        },
+        {
+            "name": "Nuclear Power Plant",
+            "key_name": "nuclear-power-plant",
+            "category": "nuke-reacting",
+            "base_power": 2500,
+            "power_consumption": 0,
+            "type": "fuel"
+        }
+    ],
     "items": [
         {
             "name": "Iron Ore",
@@ -4624,6 +4668,78 @@
             "products": [
                 ["plutonium-waste", 10]
             ]
+        },
+        {
+            "name": "Biomass Power",
+            "key_name": "power-biomass",
+            "category": "biomass-power",
+            "time": 4,
+            "ingredients": [
+                ["leaves", 120]
+            ],
+            "products": []
+        },
+        {
+            "name": "Solid Biofuel Power",
+            "key_name": "power-solid-biofuel",
+            "category": "biomass-power",
+            "time": 4,
+            "ingredients": [
+                ["solid-biofuel", 60]
+            ],
+            "products": []
+        },
+        {
+            "name": "Coal Power",
+            "key_name": "power-coal",
+            "category": "coal-power",
+            "time": 4,
+            "ingredients": [
+                ["coal", 15],
+                ["water", 45]
+            ],
+            "products": []
+        },
+        {
+            "name": "Compacted Coal Power",
+            "key_name": "power-compacted-coal",
+            "category": "coal-power",
+            "time": 4,
+            "ingredients": [
+                ["compacted-coal", 7.5],
+                ["water", 45]
+            ],
+            "products": []
+        },
+        {
+            "name": "Fuel Power",
+            "key_name": "power-fuel",
+            "category": "fuel-power",
+            "time": 6,
+            "ingredients": [
+                ["fuel", 12]
+            ],
+            "products": []
+        },
+        {
+            "name": "Liquid Biofuel Power",
+            "key_name": "power-liquid-biofuel",
+            "category": "fuel-power",
+            "time": 6,
+            "ingredients": [
+                ["liquid-biofuel", 12]
+            ],
+            "products": []
+        },
+        {
+            "name": "Turbofuel Power",
+            "key_name": "power-turbofuel",
+            "category": "fuel-power",
+            "time": 8,
+            "ingredients": [
+                ["turbofuel", 4.5]
+            ],
+            "products": []
         }
     ],
     "resources": [

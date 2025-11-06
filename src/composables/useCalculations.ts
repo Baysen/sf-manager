@@ -1,6 +1,7 @@
 import type { Recipe } from '../types/recipe';
-import type { ProductionLine, ResourceBalance, PowerBreakdown, ResourceExtractionLine, Location, ImportDetail, ExportDetail } from '../types/location';
+import type { ProductionLine, ResourceBalance, PowerBreakdown, PowerSummary, ResourceExtractionLine, PowerGenerationLine, Location, ImportDetail, ExportDetail } from '../types/location';
 import { useMiners, PURITY_MULTIPLIERS, type Miner } from './useMiners';
+import { usePowerGenerators, type PowerGenerator } from './usePowerGenerators';
 
 /**
  * Calculate the production multiplier from somersloops
@@ -34,6 +35,7 @@ export function calculateSomersloopPowerMultiplier(
 
 export function useCalculations() {
   const { getMinerByKeyName, getResourceByKeyName } = useMiners();
+  const { getGeneratorByKeyName } = usePowerGenerators();
 
   const calculateExtractionRate = (
     miner: Miner,
@@ -64,6 +66,47 @@ export function useCalculations() {
 
     return totalPower;
   };
+
+  const calculatePowerGeneration = (
+    generator: PowerGenerator,
+    powerLine: PowerGenerationLine
+  ): number => {
+    let totalPower = 0;
+
+    // For geothermal with variable power, use actualPower if provided
+    if (generator.type === 'geothermal' && generator.variable_power && powerLine.actualPower) {
+      for (const overclock of powerLine.overclocking) {
+        const speedMultiplier = overclock.percentage / 100;
+        totalPower += powerLine.actualPower * overclock.count * speedMultiplier;
+      }
+    } else {
+      // Normal power generation (fuel-based or geothermal with fixed power)
+      for (const overclock of powerLine.overclocking) {
+        const speedMultiplier = overclock.percentage / 100;
+        totalPower += generator.base_power * overclock.count * speedMultiplier;
+      }
+    }
+
+    return totalPower;
+  };
+
+  const calculateGeneratorPowerConsumption = (
+    generator: PowerGenerator,
+    powerLine: PowerGenerationLine
+  ): number => {
+    // Most generators don't consume power, but included for completeness
+    if (generator.power_consumption === 0) return 0;
+
+    let totalPower = 0;
+    for (const overclock of powerLine.overclocking) {
+      const speedMultiplier = overclock.percentage / 100;
+      const powerMultiplier = Math.pow(speedMultiplier, 1.6);
+      totalPower += generator.power_consumption * overclock.count * powerMultiplier;
+    }
+
+    return totalPower;
+  };
+
   const calculateProductionRate = (
     recipe: Recipe,
     productionLine: ProductionLine,
@@ -147,6 +190,30 @@ export function useCalculations() {
         const current = resourceMap.get(input.resource) || { production: 0, consumption: 0, imports: [], exports: [] };
         current.consumption += calculateProductionRate(recipe, line, input.resource, true);
         resourceMap.set(input.resource, current);
+      }
+    }
+
+    // Add power generation lines (fuel consumption and waste production)
+    if (currentLocation?.powerGenerationLines) {
+      for (const line of currentLocation.powerGenerationLines) {
+        if (!line.recipeId) continue; // Skip geothermal (no fuel)
+
+        const recipe = recipes.find(r => r.id === line.recipeId);
+        if (!recipe) continue;
+
+        // Add fuel consumption
+        for (const input of recipe.inputs) {
+          const current = resourceMap.get(input.resource) || { production: 0, consumption: 0, imports: [], exports: [] };
+          current.consumption += calculateProductionRate(recipe, line as unknown as ProductionLine, input.resource, true);
+          resourceMap.set(input.resource, current);
+        }
+
+        // Add waste production (e.g., uranium waste from nuclear)
+        for (const output of recipe.outputs) {
+          const current = resourceMap.get(output.resource) || { production: 0, consumption: 0, imports: [], exports: [] };
+          current.production += calculateProductionRate(recipe, line as unknown as ProductionLine, output.resource, false);
+          resourceMap.set(output.resource, current);
+        }
       }
     }
 
@@ -292,12 +359,83 @@ export function useCalculations() {
     }));
   };
 
+  const calculatePowerSummary = (
+    productionLines: ProductionLine[],
+    recipes: Recipe[],
+    extractionLines: ResourceExtractionLine[] = [],
+    powerGenerationLines: PowerGenerationLine[] = []
+  ): PowerSummary => {
+    const consumptionMap = new Map<string, number>();
+    const generationMap = new Map<string, number>();
+
+    // Calculate power consumption from extraction lines
+    for (const line of extractionLines) {
+      const miner = getMinerByKeyName(line.minerType);
+      if (!miner) continue;
+
+      const power = calculateExtractionPower(miner, line);
+      const current = consumptionMap.get(miner.name) || 0;
+      consumptionMap.set(miner.name, current + power);
+    }
+
+    // Calculate power consumption from production lines
+    for (const line of productionLines) {
+      const recipe = recipes.find(r => r.id === line.recipeId);
+      if (!recipe) continue;
+
+      const power = calculatePowerConsumption(recipe, line);
+      const current = consumptionMap.get(recipe.machine) || 0;
+      consumptionMap.set(recipe.machine, current + power);
+    }
+
+    // Calculate power generation
+    for (const line of powerGenerationLines) {
+      const generator = getGeneratorByKeyName(line.generatorType);
+      if (!generator) continue;
+
+      const power = calculatePowerGeneration(generator, line);
+      const current = generationMap.get(generator.name) || 0;
+      generationMap.set(generator.name, current + power);
+
+      // Add generator's own power consumption if any
+      const genConsumption = calculateGeneratorPowerConsumption(generator, line);
+      if (genConsumption > 0) {
+        const currentConsumption = consumptionMap.get(generator.name) || 0;
+        consumptionMap.set(generator.name, currentConsumption + genConsumption);
+      }
+    }
+
+    const consumptionBreakdown = Array.from(consumptionMap.entries()).map(([machineType, consumption]) => ({
+      machineType,
+      consumption
+    }));
+
+    const generationBreakdown = Array.from(generationMap.entries()).map(([machineType, consumption]) => ({
+      machineType,
+      consumption
+    }));
+
+    const totalConsumption = consumptionBreakdown.reduce((sum, item) => sum + item.consumption, 0);
+    const totalGeneration = generationBreakdown.reduce((sum, item) => sum + item.consumption, 0);
+
+    return {
+      totalGeneration,
+      totalConsumption,
+      netPower: totalGeneration - totalConsumption,
+      generationBreakdown,
+      consumptionBreakdown
+    };
+  };
+
   return {
     calculateProductionRate,
     calculatePowerConsumption,
     calculateExtractionRate,
     calculateExtractionPower,
+    calculatePowerGeneration,
+    calculateGeneratorPowerConsumption,
     calculateResourceBalances,
-    calculatePowerBreakdown
+    calculatePowerBreakdown,
+    calculatePowerSummary
   };
 }

@@ -20,6 +20,17 @@ export interface ResourceExtractionLine {
   overclocking: OverclockingConfig[];
 }
 
+export interface PowerGenerationLine {
+  id: string;
+  generatorType: string; // biomass-burner, coal-generator, fuel-generator, geothermal-generator, nuclear-power-plant
+  recipeId?: string; // For fuel-based generators (optional for geothermal)
+  machineCount: number;
+  overclocking: OverclockingConfig[];
+  connectedToGrid: boolean; // Whether this generator is connected to global power grid
+  // For geothermal with variable power
+  actualPower?: number; // Actual MW per generator (for variable power like geothermal)
+}
+
 export interface ResourceExport {
   id: string;
   resource: string;
@@ -33,6 +44,7 @@ export interface Location {
   name: string;
   resourceExtractionLines: ResourceExtractionLine[];
   productionLines: ProductionLine[];
+  powerGenerationLines: PowerGenerationLine[];
   exports: ResourceExport[];
 }
 
@@ -61,4 +73,12 @@ export interface ResourceBalance {
 export interface PowerBreakdown {
   machineType: string;
   consumption: number;
+}
+
+export interface PowerSummary {
+  totalGeneration: number; // Total power generated
+  totalConsumption: number; // Total power consumed
+  netPower: number; // Generation - Consumption
+  generationBreakdown: PowerBreakdown[]; // Breakdown by generator type
+  consumptionBreakdown: PowerBreakdown[]; // Breakdown by consumer type
 }

@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import type { Location, ProductionLine, ResourceExtractionLine, ResourceExport } from '../types/location';
+import type { Location, ProductionLine, ResourceExtractionLine, PowerGenerationLine, ResourceExport } from '../types/location';
 import { useStorage } from './useStorage';
 
 const locations = ref<Location[]>([]);
@@ -26,6 +26,7 @@ export function useLocations() {
       name,
       resourceExtractionLines: [],
       productionLines: [],
+      powerGenerationLines: [],
       exports: []
     };
     locations.value.push(newLocation);
@@ -111,6 +112,37 @@ export function useLocations() {
     }
   };
 
+  const addPowerGenerationLine = (locationId: string, powerLine: Omit<PowerGenerationLine, 'id'>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const newLine: PowerGenerationLine = {
+        ...powerLine,
+        id: `power-${Date.now()}`
+      };
+      location.powerGenerationLines.push(newLine);
+    }
+  };
+
+  const updatePowerGenerationLine = (locationId: string, lineId: string, updates: Partial<Omit<PowerGenerationLine, 'id'>>) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const line = location.powerGenerationLines.find(l => l.id === lineId);
+      if (line) {
+        Object.assign(line, updates);
+      }
+    }
+  };
+
+  const deletePowerGenerationLine = (locationId: string, lineId: string) => {
+    const location = locations.value.find(l => l.id === locationId);
+    if (location) {
+      const index = location.powerGenerationLines.findIndex(l => l.id === lineId);
+      if (index !== -1) {
+        location.powerGenerationLines.splice(index, 1);
+      }
+    }
+  };
+
   const addResourceExport = (locationId: string, resourceExport: Omit<ResourceExport, 'id'>) => {
     const location = locations.value.find(l => l.id === locationId);
     if (location) {
@@ -169,6 +201,9 @@ export function useLocations() {
     addResourceExtractionLine,
     updateResourceExtractionLine,
     deleteResourceExtractionLine,
+    addPowerGenerationLine,
+    updatePowerGenerationLine,
+    deletePowerGenerationLine,
     addResourceExport,
     updateResourceExport,
     deleteResourceExport,
