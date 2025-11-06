@@ -41,7 +41,7 @@ const { allRecipes } = useRecipes()
 const selectedOutputResource = ref<string>('')
 const selectedRecipeId = ref<string>('')
 const overclockingConfigs = ref<OverclockingConfig[]>([
-  { count: 1, percentage: 100 }
+  { count: 1, percentage: 100, somersloops: 0 }
 ])
 
 // Get unique output resources (alphabetically sorted)
@@ -85,7 +85,10 @@ watch(() => props.isOpen, (isOpen) => {
     if (props.productionLine) {
       // Edit mode - populate with existing data
       const line = props.productionLine
-      overclockingConfigs.value = line.overclocking.map(config => ({ ...config }))
+      overclockingConfigs.value = line.overclocking.map(config => ({
+        ...config,
+        somersloops: config.somersloops || 0
+      }))
 
       // Find and set the output resource for this recipe
       const recipe = allRecipes.value.find(r => r.id === line.recipeId)
@@ -104,11 +107,11 @@ watch(() => props.isOpen, (isOpen) => {
 const resetForm = () => {
   selectedOutputResource.value = ''
   selectedRecipeId.value = ''
-  overclockingConfigs.value = [{ count: 1, percentage: 100 }]
+  overclockingConfigs.value = [{ count: 1, percentage: 100, somersloops: 0 }]
 }
 
 const addOverclockingConfig = () => {
-  overclockingConfigs.value.push({ count: 1, percentage: 100 })
+  overclockingConfigs.value.push({ count: 1, percentage: 100, somersloops: 0 })
 }
 
 const removeOverclockingConfig = (index: number) => {
@@ -142,11 +145,20 @@ const handleSave = () => {
 
 // Preset clock speeds
 const presetClockSpeeds = [50, 100, 150, 200, 250]
+
+// Get somersloop presets based on selected recipe
+const getSomersloopPresets = computed(() => {
+  if (!selectedRecipe.value || selectedRecipe.value.somersloopSlots === null) {
+    return []
+  }
+  const max = selectedRecipe.value.somersloopSlots
+  return Array.from({ length: max + 1 }, (_, i) => i)
+})
 </script>
 
 <template>
   <Dialog :open="isOpen" @update:open="(open) => !open && emit('close')">
-    <DialogContent class="max-w-3xl max-h-[90vh] flex flex-col">
+    <DialogContent class="sm:max-w-2xl max-h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>
           {{ productionLine ? 'Edit Production Line' : 'Add Production Line' }}
@@ -236,7 +248,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
           </div>
         </div>
 
-        <!-- Overclocking Configuration -->
+        <!-- Overclocking & Somersloop Configuration -->
         <div class="space-y-4">
           <div class="flex justify-between items-center">
             <Label>
@@ -255,56 +267,96 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
             <div
               v-for="(config, index) in overclockingConfigs"
               :key="index"
-              class="flex items-center gap-3 p-3 rounded-lg border bg-card"
+              class="space-y-3 p-3 rounded-lg border bg-card"
             >
-              <div class="flex-1 space-y-2">
-                <Label :for="`machine-count-${index}`" class="text-xs">Machine Count</Label>
-                <Input
-                  :id="`machine-count-${index}`"
-                  v-model.number="config.count"
-                  type="number"
-                  min="1"
-                />
+              <div class="flex items-center gap-3">
+                <div class="flex-1 space-y-2">
+                  <Label :for="`machine-count-${index}`" class="text-xs">Machine Count</Label>
+                  <Input
+                    :id="`machine-count-${index}`"
+                    v-model.number="config.count"
+                    type="number"
+                    min="1"
+                  />
+                </div>
+
+                <div class="flex-1 space-y-2">
+                  <Label :for="`clock-speed-${index}`" class="text-xs">Clock Speed (%)</Label>
+                  <Input
+                    :id="`clock-speed-${index}`"
+                    v-model.number="config.percentage"
+                    type="number"
+                    min="1"
+                    max="250"
+                  />
+                </div>
+
+                <div class="flex-1 space-y-2">
+                  <Label class="text-xs">Clock Presets</Label>
+                  <div class="flex gap-1">
+                    <Button
+                      v-for="speed in presetClockSpeeds"
+                      :key="speed"
+                      @click="config.percentage = speed"
+                      variant="outline"
+                      size="sm"
+                      class="px-2 py-1 h-8 text-xs"
+                    >
+                      {{ speed }}
+                    </Button>
+                  </div>
+                </div>
+
+                <Button
+                  v-if="overclockingConfigs.length > 1"
+                  @click="removeOverclockingConfig(index)"
+                  variant="ghost"
+                  size="icon"
+                  class="text-destructive mt-5"
+                >
+                  <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
               </div>
 
-              <div class="flex-1 space-y-2">
-                <Label :for="`clock-speed-${index}`" class="text-xs">Clock Speed (%)</Label>
-                <Input
-                  :id="`clock-speed-${index}`"
-                  v-model.number="config.percentage"
-                  type="number"
-                  min="1"
-                  max="250"
-                />
-              </div>
-
-              <div class="flex-1 space-y-2">
-                <Label class="text-xs">Presets</Label>
-                <div class="flex gap-1">
-                  <Button
-                    v-for="speed in presetClockSpeeds"
-                    :key="speed"
-                    @click="config.percentage = speed"
-                    variant="outline"
-                    size="sm"
-                    class="px-2 py-1 h-8 text-xs"
-                  >
-                    {{ speed }}
-                  </Button>
+              <!-- Somersloop Configuration for this overclocking config -->
+              <div v-if="getSomersloopPresets.length > 0" class="pt-2 border-t border-border/50">
+                <div class="space-y-2">
+                  <Label class="text-xs">Somersloops</Label>
+                  <div class="flex gap-2 flex-wrap">
+                    <Button
+                      v-for="count in getSomersloopPresets"
+                      :key="count"
+                      @click="config.somersloops = count"
+                      :variant="config.somersloops === count ? 'default' : 'outline'"
+                      size="sm"
+                      class="p-1 h-auto"
+                    >
+                      <template v-if="count === 0">
+                        <span class="px-2">0</span>
+                      </template>
+                      <template v-else>
+                        <div class="flex gap-0">
+                          <img
+                            v-for="slot in selectedRecipe!.somersloopSlots"
+                            :key="slot"
+                            src="/icons/Somersloop.png"
+                            alt="Somersloop"
+                            class="w-6 h-6"
+                            :class="slot <= count ? '' : 'opacity-30'"
+                          />
+                        </div>
+                      </template>
+                    </Button>
+                  </div>
+                </div>
+                <div v-if="config.somersloops && config.somersloops > 0 && selectedRecipe?.somersloopSlots" class="text-xs text-muted-foreground mt-2">
+                  Production: <span class="text-green-500 font-semibold">{{ ((1 + config.somersloops / selectedRecipe.somersloopSlots) * 100).toFixed(0) }}%</span>
+                  <span class="mx-2">•</span>
+                  Power: <span class="text-yellow-500 font-semibold">{{ Math.pow(2, config.somersloops).toFixed(1) }}x</span>
                 </div>
               </div>
-
-              <Button
-                v-if="overclockingConfigs.length > 1"
-                @click="removeOverclockingConfig(index)"
-                variant="ghost"
-                size="icon"
-                class="text-destructive mt-5"
-              >
-                <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </Button>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ProductionLine } from '../../types/location';
 import type { Recipe } from '../../types/recipe';
 import { useCalculations } from '../../composables/useCalculations';
@@ -31,10 +32,17 @@ const getCalculatedRate = (resourceName: string, isInput: boolean) => {
 const getTotalPower = () => {
   return calculatePowerConsumption(props.recipe, props.productionLine);
 };
+
+const hasSomersloops = computed(() => {
+  return props.productionLine.overclocking.some(config => config.somersloops && config.somersloops > 0);
+});
 </script>
 
 <template>
-  <Card class="hover:border-muted-foreground/50 transition-colors">
+  <Card
+    class="hover:border-muted-foreground/50 transition-all duration-300"
+    :class="hasSomersloops ? 'somersloop-glow' : ''"
+  >
     <CardContent class="p-3">
       <div class="flex justify-between items-start mb-3">
         <div class="flex items-center gap-3">
@@ -77,8 +85,21 @@ const getTotalPower = () => {
       </div>
 
       <div class="text-xs text-muted-foreground mb-3 space-y-0.5">
-        <div v-for="(config, index) in productionLine.overclocking" :key="index">
-          <span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span>
+        <div v-for="(config, index) in productionLine.overclocking" :key="index" class="flex items-center gap-2">
+          <span><span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span></span>
+          <template v-if="recipe.somersloopSlots && recipe.somersloopSlots > 0 && config.somersloops && config.somersloops > 0">
+            <span class="text-muted-foreground">•</span>
+            <div class="flex gap-0">
+              <img
+                v-for="slot in recipe.somersloopSlots"
+                :key="slot"
+                src="/icons/Somersloop.png"
+                alt="Somersloop"
+                class="w-4 h-4"
+                :class="slot <= config.somersloops ? '' : 'opacity-20'"
+              />
+            </div>
+          </template>
         </div>
       </div>
 
@@ -111,3 +132,18 @@ const getTotalPower = () => {
     </CardContent>
   </Card>
 </template>
+
+<style scoped>
+@keyframes somersloop-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgb(168 85 247 / 0.05), 0 10px 15px -3px rgb(168 85 247 / 0.05);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgb(168 85 247 / 0.1), 0 10px 15px -3px rgb(168 85 247 / 0.1);
+  }
+}
+
+.somersloop-glow {
+  animation: somersloop-pulse 5s ease-in-out infinite;
+}
+</style>
