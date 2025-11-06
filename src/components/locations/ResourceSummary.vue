@@ -47,7 +47,7 @@ const formatRate = (rate: number) => {
 
 <template>
   <Card>
-    <CardHeader class="pb-3">
+    <CardHeader class="pb-1">
       <CardTitle class="text-base">Resource Summary</CardTitle>
     </CardHeader>
     <CardContent class="pb-4">
@@ -55,11 +55,11 @@ const formatRate = (rate: number) => {
         No production lines yet
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-2">
         <div
           v-for="balance in sortedBalances"
           :key="balance.resource"
-          class="text-xs border-b pb-3 last:border-b-0 last:pb-0"
+          class="text-xs border-b pb-4 last:border-b-0 last:pb-0"
         >
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-center gap-2">
