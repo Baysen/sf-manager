@@ -22,9 +22,9 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusVariant = (status: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getStatusVariant = (status: string): 'success' | 'secondary' | 'destructive' | 'outline' => {
   switch (status) {
-    case 'surplus': return 'default';
+    case 'surplus': return 'success';
     case 'deficit': return 'destructive';
     case 'balanced': return 'secondary';
     default: return 'outline';
@@ -50,7 +50,7 @@ const formatRate = (rate: number) => {
     <CardHeader class="pb-1">
       <CardTitle class="text-base">Resource Summary</CardTitle>
     </CardHeader>
-    <CardContent class="pb-4">
+    <CardContent class="py-2">
       <div v-if="balances.length === 0" class="text-muted-foreground text-xs">
         No production lines yet
       </div>
@@ -59,7 +59,7 @@ const formatRate = (rate: number) => {
         <div
           v-for="balance in sortedBalances"
           :key="balance.resource"
-          class="text-xs border-b pb-4 last:border-b-0 last:pb-0"
+          class="text-xs border-b pb-2 last:border-b-0 last:pb-0"
         >
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-center gap-2">
@@ -115,7 +115,7 @@ const formatRate = (rate: number) => {
             </div>
 
             <!-- Net Balance -->
-            <div class="pt-1.5 border-t border-border/50">
+            <div class="pt-1.5 text-right">
               <span class="text-muted-foreground font-medium">Net:</span>
               <span :class="['ml-1 font-bold', getStatusColor(balance.status)]">
                 {{ balance.balance >= 0 ? '+' : '' }}{{ formatRate(balance.balance) }}/min
