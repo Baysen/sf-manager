@@ -363,10 +363,11 @@ export function useCalculations() {
     productionLines: ProductionLine[],
     recipes: Recipe[],
     extractionLines: ResourceExtractionLine[] = [],
-    powerGenerationLines: PowerGenerationLine[] = []
+    powerGenerationLines: PowerGenerationLine[] = [],
+    allLocations: Location[] = []
   ): PowerSummary => {
     const consumptionMap = new Map<string, number>();
-    const generationMap = new Map<string, number>();
+    const localGenerationMap = new Map<string, number>();
 
     // Calculate power consumption from extraction lines
     for (const line of extractionLines) {
@@ -388,20 +389,38 @@ export function useCalculations() {
       consumptionMap.set(recipe.machine, current + power);
     }
 
-    // Calculate power generation
+    // Calculate LOCAL power generation (only generators NOT connected to grid)
     for (const line of powerGenerationLines) {
       const generator = getGeneratorByKeyName(line.generatorType);
       if (!generator) continue;
 
-      const power = calculatePowerGeneration(generator, line);
-      const current = generationMap.get(generator.name) || 0;
-      generationMap.set(generator.name, current + power);
+      // Only count generators that are NOT connected to the global grid
+      if (!line.connectedToGrid) {
+        const power = calculatePowerGeneration(generator, line);
+        const current = localGenerationMap.get(generator.name) || 0;
+        localGenerationMap.set(generator.name, current + power);
+      }
 
-      // Add generator's own power consumption if any
+      // Add generator's own power consumption if any (regardless of grid connection)
       const genConsumption = calculateGeneratorPowerConsumption(generator, line);
       if (genConsumption > 0) {
         const currentConsumption = consumptionMap.get(generator.name) || 0;
         consumptionMap.set(generator.name, currentConsumption + genConsumption);
+      }
+    }
+
+    // Calculate GLOBAL GRID power generation (all connected generators across all locations)
+    let globalGridGeneration = 0;
+    for (const location of allLocations) {
+      for (const line of location.powerGenerationLines) {
+        const generator = getGeneratorByKeyName(line.generatorType);
+        if (!generator) continue;
+
+        // Only count generators that ARE connected to the global grid
+        if (line.connectedToGrid) {
+          const power = calculatePowerGeneration(generator, line);
+          globalGridGeneration += power;
+        }
       }
     }
 
@@ -410,16 +429,19 @@ export function useCalculations() {
       consumption
     }));
 
-    const generationBreakdown = Array.from(generationMap.entries()).map(([machineType, consumption]) => ({
+    const generationBreakdown = Array.from(localGenerationMap.entries()).map(([machineType, consumption]) => ({
       machineType,
       consumption
     }));
 
     const totalConsumption = consumptionBreakdown.reduce((sum, item) => sum + item.consumption, 0);
-    const totalGeneration = generationBreakdown.reduce((sum, item) => sum + item.consumption, 0);
+    const localGeneration = generationBreakdown.reduce((sum, item) => sum + item.consumption, 0);
+    const totalGeneration = localGeneration + globalGridGeneration;
 
     return {
       totalGeneration,
+      localGeneration,
+      globalGridGeneration,
       totalConsumption,
       netPower: totalGeneration - totalConsumption,
       generationBreakdown,
