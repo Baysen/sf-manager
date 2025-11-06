@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import type { ProductionLine, OverclockingConfig } from '../../types/location'
 import { useRecipes } from '../../composables/useRecipes'
 import ResourceIcon from '../common/ResourceIcon.vue'
@@ -43,6 +43,7 @@ const selectedRecipeId = ref<string>('')
 const overclockingConfigs = ref<OverclockingConfig[]>([
   { count: 1, percentage: 100, somersloops: 0 }
 ])
+const isInitializing = ref(false)
 
 // Get unique output resources (alphabetically sorted)
 const outputResources = computed(() => {
@@ -70,9 +71,12 @@ const selectedRecipe = computed(() => {
 })
 
 // Watch for output resource change to reset recipe selection
+// Skip reset during initialization to preserve recipe selection when editing
 watch(selectedOutputResource, () => {
-  selectedRecipeId.value = ''
-})
+  if (!isInitializing.value) {
+    selectedRecipeId.value = ''
+  }
+}, { flush: 'sync' })
 
 // Calculate total machine count
 const totalMachineCount = computed(() => {
@@ -80,10 +84,15 @@ const totalMachineCount = computed(() => {
 })
 
 // Watch for modal open/close to reset or populate form
-watch(() => props.isOpen, (isOpen) => {
+watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     if (props.productionLine) {
       // Edit mode - populate with existing data
+      isInitializing.value = true
+
+      // Wait for next tick to ensure isInitializing flag is processed
+      await nextTick()
+
       const line = props.productionLine
       overclockingConfigs.value = line.overclocking.map(config => ({
         ...config,
@@ -95,12 +104,21 @@ watch(() => props.isOpen, (isOpen) => {
       const firstOutput = recipe?.outputs?.[0]
       if (firstOutput) {
         selectedOutputResource.value = firstOutput.resource
+        // Wait for next tick before setting recipe ID to ensure output resource is set first
+        await nextTick()
         selectedRecipeId.value = line.recipeId
       }
+
+      // Wait one more tick to ensure recipe is set before allowing watcher to work normally
+      await nextTick()
+      isInitializing.value = false
     } else {
       // Add mode - reset form
       resetForm()
     }
+  } else {
+    // Modal closed - ensure flag is reset
+    isInitializing.value = false
   }
 })
 
