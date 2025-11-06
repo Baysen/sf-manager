@@ -64,7 +64,7 @@ A web application to track and manage multiple factory locations in Satisfactory
 - Overview page summarizing all locations
 - Accordion-like functionality to be able to collapse sections (Resource Extraction, ...)
 - A way to sort and edit/delete locations
-
+- i8n
 
 ### Post-MVP (Phase 3)
 - Enhanced resource flow visualization
