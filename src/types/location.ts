@@ -1,6 +1,7 @@
 export interface OverclockingConfig {
   count: number; // number of machines at this speed
   percentage: number; // 100, 150, 250, etc.
+  somersloops?: number; // Number of somersloops per machine in this config
 }
 
 export interface ProductionLine {

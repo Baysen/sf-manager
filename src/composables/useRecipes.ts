@@ -66,7 +66,8 @@ function transformRecipe(sourceRecipe: SourceRecipe): Recipe {
     isAlternate,
     inputs,
     outputs,
-    powerConsumption: building?.power || 0 // MW at 100% clock speed
+    powerConsumption: building?.power || 0, // MW at 100% clock speed
+    somersloopSlots: building?.somersloop_slots ?? null
   };
 }
 

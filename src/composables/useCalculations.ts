@@ -2,6 +2,36 @@ import type { Recipe } from '../types/recipe';
 import type { ProductionLine, ResourceBalance, PowerBreakdown, ResourceExtractionLine, Location, ImportDetail, ExportDetail } from '../types/location';
 import { useMiners, PURITY_MULTIPLIERS, type Miner } from './useMiners';
 
+/**
+ * Calculate the production multiplier from somersloops
+ * Somersloops always provide up to 2x production when maxed
+ * Each somersloop adds (1.0 / maxSomersloops) to the multiplier
+ * @param somersloopCount - Number of somersloops installed
+ * @param maxSomersloops - Maximum somersloops this machine can hold
+ * @returns Production multiplier (1.0 to 2.0)
+ */
+export function calculateSomersloopProductionMultiplier(
+  somersloopCount: number,
+  maxSomersloops: number | null
+): number {
+  if (!maxSomersloops || somersloopCount <= 0) return 1.0;
+  const clampedCount = Math.min(somersloopCount, maxSomersloops);
+  return 1.0 + (clampedCount / maxSomersloops);
+}
+
+/**
+ * Calculate the power multiplier from somersloops
+ * Each somersloop doubles the power consumption
+ * @param somersloopCount - Number of somersloops installed
+ * @returns Power multiplier (2^somersloopCount)
+ */
+export function calculateSomersloopPowerMultiplier(
+  somersloopCount: number
+): number {
+  if (somersloopCount <= 0) return 1.0;
+  return Math.pow(2, somersloopCount);
+}
+
 export function useCalculations() {
   const { getMinerByKeyName, getResourceByKeyName } = useMiners();
 
@@ -46,7 +76,13 @@ export function useCalculations() {
     let totalRate = 0;
     for (const overclock of productionLine.overclocking) {
       const speedMultiplier = overclock.percentage / 100;
-      totalRate += baseRate * overclock.count * speedMultiplier;
+
+      // Calculate somersloop multiplier for this config (only affects outputs, not inputs)
+      const somersloopMultiplier = !isInput
+        ? calculateSomersloopProductionMultiplier(overclock.somersloops || 0, recipe.somersloopSlots)
+        : 1.0;
+
+      totalRate += baseRate * overclock.count * speedMultiplier * somersloopMultiplier;
     }
 
     return totalRate;
@@ -60,7 +96,11 @@ export function useCalculations() {
     for (const overclock of productionLine.overclocking) {
       const speedMultiplier = overclock.percentage / 100;
       const powerMultiplier = Math.pow(speedMultiplier, 1.6);
-      totalPower += recipe.powerConsumption * overclock.count * powerMultiplier;
+
+      // Calculate somersloop power multiplier for this config (each somersloop doubles power)
+      const somersloopPowerMultiplier = calculateSomersloopPowerMultiplier(overclock.somersloops || 0);
+
+      totalPower += recipe.powerConsumption * overclock.count * powerMultiplier * somersloopPowerMultiplier;
     }
     return totalPower;
   };
