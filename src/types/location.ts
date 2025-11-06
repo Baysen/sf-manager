@@ -42,6 +42,7 @@ export interface ResourceExport {
 export interface Location {
   id: string;
   name: string;
+  pinned?: boolean; // Whether this location is pinned/favorited
   resourceExtractionLines: ResourceExtractionLine[];
   productionLines: ProductionLine[];
   powerGenerationLines: PowerGenerationLine[];

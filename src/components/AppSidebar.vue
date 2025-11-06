@@ -31,9 +31,15 @@ const emit = defineEmits<{
 
 const { locations } = useLocations()
 
-// Sort locations alphabetically by name
+// Sort locations: pinned first, then alphabetically by name
 const sortedLocations = computed(() => {
-  return [...locations.value].sort((a, b) => a.name.localeCompare(b.name))
+  return [...locations.value].sort((a, b) => {
+    // Pinned locations come first
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+    // Within same pin status, sort alphabetically
+    return a.name.localeCompare(b.name)
+  })
 })
 
 // Data for navigation
