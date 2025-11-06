@@ -95,6 +95,8 @@ const resourceBalances = computed(() => {
 const powerSummary = computed(() => {
   if (!activeLocation.value) return {
     totalGeneration: 0,
+    localGeneration: 0,
+    globalGridGeneration: 0,
     totalConsumption: 0,
     netPower: 0,
     generationBreakdown: [],
@@ -104,7 +106,8 @@ const powerSummary = computed(() => {
     activeLocation.value.productionLines,
     allRecipes.value,
     activeLocation.value.resourceExtractionLines,
-    activeLocation.value.powerGenerationLines
+    activeLocation.value.powerGenerationLines,
+    locations.value
   );
 });
 

@@ -437,6 +437,157 @@ For absolute mode:
   exportAmount = specifiedAmount
 ```
 
+## Power Generation and Grid System
+
+### Power Generator Types
+The application supports 5 types of power generators (defined in `source-data.json`):
+
+1. **Biomass Burner** - 30 MW (fuel-based)
+2. **Coal Generator** - 75 MW (fuel-based)
+3. **Fuel Generator** - 150 MW (fuel-based)
+4. **Geothermal Generator** - 200 MW base, variable 50-600 MW (geothermal, no fuel required)
+5. **Nuclear Power Plant** - 2500 MW (fuel-based)
+
+### Power Generator Data Structure
+Each power generation line includes:
+```typescript
+{
+  id: string;
+  generatorType: string; // biomass-burner, coal-generator, etc.
+  recipeId?: string; // Required for fuel-based, optional for geothermal
+  machineCount: number;
+  overclocking: OverclockingConfig[];
+  connectedToGrid: boolean; // Whether connected to global power grid
+  actualPower?: number; // For geothermal with variable power (MW per generator)
+}
+```
+
+### Power Generation Calculation
+```
+For fuel-based generators (Biomass, Coal, Fuel, Nuclear):
+  For each overclocking configuration:
+    speedMultiplier = percentage / 100
+    power = generator.base_power * count * speedMultiplier
+  Total generation = sum of all overclocking configurations
+
+For geothermal generators with variable power:
+  If actualPower is provided (variable geothermal):
+    For each overclocking configuration:
+      speedMultiplier = percentage / 100
+      power = actualPower * count * speedMultiplier
+  Otherwise (fixed geothermal):
+    Use base_power like fuel-based generators
+```
+
+### Power Consumption Calculation
+```
+For resource extractors:
+  For each overclocking configuration:
+    speedMultiplier = percentage / 100
+    powerMultiplier = speedMultiplier ^ 1.6
+    power = miner.power * count * powerMultiplier
+
+For production machines:
+  For each overclocking configuration:
+    speedMultiplier = percentage / 100
+    powerMultiplier = speedMultiplier ^ 1.6
+    somersloopPowerMultiplier = 2 ^ somersloopCount
+    power = recipe.powerConsumption * count * powerMultiplier * somersloopPowerMultiplier
+
+For generators (if they consume power):
+  For each overclocking configuration:
+    speedMultiplier = percentage / 100
+    powerMultiplier = speedMultiplier ^ 1.6
+    power = generator.power_consumption * count * powerMultiplier
+
+Total consumption = sum of all extraction + production + generator consumption
+```
+
+**Key Formula**: `powerMultiplier = speedMultiplier ^ 1.6`
+- This is Satisfactory's official overclocking power curve
+- Overclocking to 250% uses ~3.97x power, not 2.5x
+
+### Somersloop Power Multiplier
+```
+somersloopPowerMultiplier = 2 ^ somersloopCount
+```
+- Each somersloop doubles power consumption
+- 1 somersloop = 2x power, 2 somersloops = 4x power, etc.
+- Combined multiplicatively with overclocking power multiplier
+
+### Global Power Grid System
+Power generators have a `connectedToGrid` boolean flag:
+
+- **Connected to Grid** (`true`): Generator contributes to global power pool shared across all locations
+- **Disconnected** (`false`): Generator only powers its local location
+
+**Implementation:**
+- Global power grid pools all `connectedToGrid: true` generators across all locations
+- Each location can consume from the global pool
+- Power summary shows:
+  - **Total Generation**: Global Grid + Local Only
+  - **Global Grid Generation** (with Globe icon): Sum of all connected generators across all locations
+  - **Local Only Generation** (with Zap icon): Only generators at this location with `connectedToGrid: false`
+    - Includes breakdown by generator type (e.g., "Coal Generator: 150 MW")
+  - **Total Consumption**: This location's power needs (extractors + production + generator consumption)
+  - **Net Power**: (Global + Local) - Consumption
+    - Surplus (green): Net > 0.1 MW
+    - Balanced (yellow): -0.1 MW ≤ Net ≤ 0.1 MW
+    - Deficit (red): Net < -0.1 MW
+
+**How It Works:**
+1. When calculating power summary for a location:
+   - Global grid power is calculated by summing ALL generators with `connectedToGrid: true` from ALL locations
+   - Local power is calculated by summing only THIS location's generators with `connectedToGrid: false`
+   - Consumption is calculated from THIS location's extractors, production lines, and generators
+2. This allows multiple locations to share power from a central grid while maintaining local backup generators
+3. All generators default to `connectedToGrid: true` when created
+
+### Fuel Consumption and Waste Production
+Fuel-based generators integrate with the resource balance system:
+
+```
+For each power generation line with a recipe:
+  Fuel Consumption:
+    Add recipe inputs as resource consumption (e.g., Coal for Coal Generator)
+    Calculate using same production rate formula as production lines
+
+  Waste Production:
+    Add recipe outputs as resource production (e.g., Uranium Waste from Nuclear)
+    Calculate using same production rate formula as production lines
+```
+
+This ensures that:
+- Coal consumed by Coal Generators shows up in resource balance
+- Uranium Waste from Nuclear Power Plants shows up as production
+- Fuel can be imported/exported between locations
+
+### Power Summary Display
+The Power Summary card shows:
+
+**Generation Breakdown** (green):
+- Lists each generator type with total MW generated
+- Groups by generator name (e.g., "Coal Generator: 150 MW")
+
+**Consumption Breakdown** (red):
+- Lists each machine/extractor type with total MW consumed
+- Groups by machine name (e.g., "Constructor: 20 MW", "Miner Mk.1: 15 MW")
+
+**Net Power** (with status indicator):
+- **Surplus** (green): Net > 0.1 MW
+- **Balanced** (yellow): -0.1 MW ≤ Net ≤ 0.1 MW
+- **Deficit** (red): Net < -0.1 MW
+
+### Implementation Files
+- **Types**: `src/types/location.ts` (PowerGenerationLine, PowerSummary, PowerBreakdown)
+- **Generator Data**: `src/data/source-data.json` (power_generators array)
+- **Calculations**: `src/composables/useCalculations.ts` (calculatePowerGeneration, calculatePowerSummary)
+- **Composable**: `src/composables/usePowerGenerators.ts` (PowerGenerator interface, data loading)
+- **UI Components**:
+  - `src/components/locations/PowerGenerationCard.vue` (display generator line)
+  - `src/components/locations/PowerGenerationModal.vue` (add/edit generator)
+  - `src/components/locations/PowerSummary.vue` (power summary display)
+
 ### Validation Rules
 1. **Percentage Mode**: Sum of all percentage exports for a resource must not exceed 100%
 2. **Absolute Mode**: Sum of all absolute exports should not exceed available surplus (shows warning, not blocking)

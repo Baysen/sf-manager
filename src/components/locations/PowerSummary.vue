@@ -2,8 +2,7 @@
 import { computed } from 'vue';
 import type { PowerSummary } from '../../types/location';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Zap } from 'lucide-vue-next';
+import { Zap, Globe } from 'lucide-vue-next';
 
 const props = defineProps<{
   summary: PowerSummary;
@@ -29,6 +28,9 @@ const netPowerColor = computed(() => {
       return 'text-yellow-600 dark:text-yellow-400';
   }
 });
+
+const hasGlobalGrid = computed(() => props.summary.globalGridGeneration > 0.01);
+const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
 </script>
 
 <template>
@@ -43,31 +45,62 @@ const netPowerColor = computed(() => {
       <!-- Total Generation -->
       <div class="mb-3 pb-3 border-b">
         <div class="flex justify-between items-center mb-2">
-          <span class="text-xs text-muted-foreground">Total Generation:</span>
+          <span class="text-xs text-muted-foreground">Total Available:</span>
           <span class="text-base font-bold text-green-600 dark:text-green-400">
             {{ formatPower(summary.totalGeneration) }} MW
           </span>
         </div>
 
-        <!-- Generation Breakdown -->
-        <div v-if="summary.generationBreakdown.length > 0" class="space-y-1 ml-3">
-          <div
-            v-for="item in summary.generationBreakdown"
-            :key="item.machineType"
-            class="flex justify-between items-center text-xs"
-          >
-            <span class="text-muted-foreground">{{ item.machineType }}:</span>
+        <!-- Global Grid Generation -->
+        <div v-if="hasGlobalGrid" class="ml-3 mb-1">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-muted-foreground flex items-center gap-1">
+              <Globe class="h-3 w-3" />
+              Global Grid:
+            </span>
             <span class="font-medium text-green-600 dark:text-green-400">
-              {{ formatPower(item.consumption) }} MW
+              {{ formatPower(summary.globalGridGeneration) }} MW
             </span>
           </div>
+        </div>
+
+        <!-- Local Generation Breakdown -->
+        <div v-if="hasLocalGeneration" class="ml-3">
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="text-muted-foreground flex items-center gap-1">
+              <Zap class="h-3 w-3" />
+              Local Only:
+            </span>
+            <span class="font-medium text-green-600 dark:text-green-400">
+              {{ formatPower(summary.localGeneration) }} MW
+            </span>
+          </div>
+
+          <!-- Local Generation Breakdown by Type -->
+          <div v-if="summary.generationBreakdown.length > 0" class="space-y-1 ml-5">
+            <div
+              v-for="item in summary.generationBreakdown"
+              :key="item.machineType"
+              class="flex justify-between items-center text-xs"
+            >
+              <span class="text-muted-foreground">{{ item.machineType }}:</span>
+              <span class="font-medium text-green-600 dark:text-green-400">
+                {{ formatPower(item.consumption) }} MW
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- No generation message -->
+        <div v-if="!hasGlobalGrid && !hasLocalGeneration" class="text-muted-foreground text-xs ml-3">
+          No power generation yet
         </div>
       </div>
 
       <!-- Total Consumption -->
       <div class="mb-3 pb-3 border-b">
         <div class="flex justify-between items-center mb-2">
-          <span class="text-xs text-muted-foreground">Total Consumption:</span>
+          <span class="text-xs text-muted-foreground">Local Consumption:</span>
           <span class="text-base font-bold text-red-600 dark:text-red-400">
             {{ formatPower(summary.totalConsumption) }} MW
           </span>
