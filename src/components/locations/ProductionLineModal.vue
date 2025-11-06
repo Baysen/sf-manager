@@ -56,12 +56,21 @@ const outputResources = computed(() => {
   return Array.from(resources).sort()
 })
 
-// Recipes filtered by selected output resource
+// Recipes filtered by selected output resource, sorted alphabetically with standard recipes first
 const filteredRecipes = computed(() => {
   if (!selectedOutputResource.value) return []
-  return allRecipes.value.filter(recipe =>
-    recipe.outputs.some(output => output.resource === selectedOutputResource.value)
-  )
+  return allRecipes.value
+    .filter(recipe =>
+      recipe.outputs.some(output => output.resource === selectedOutputResource.value)
+    )
+    .sort((a, b) => {
+      // Standard recipes first, then alternates
+      if (a.isAlternate !== b.isAlternate) {
+        return a.isAlternate ? 1 : -1
+      }
+      // Within each group, sort alphabetically by name
+      return a.name.localeCompare(b.name)
+    })
 })
 
 // Selected recipe details

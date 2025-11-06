@@ -20,16 +20,19 @@ const formData = ref<Omit<ResourceExport, 'id'>>({
   resource: '',
   toLocationId: '',
   mode: 'percentage',
-  value: 0
+  value: 100
 });
 
-// Available locations (excluding current location)
+// Available locations (excluding current location), sorted alphabetically
 const availableLocations = computed(() => {
   if (!activeLocation.value) return [];
-  return locations.value.filter(loc => loc.id !== activeLocation.value?.id);
+  return locations.value
+    .filter(loc => loc.id !== activeLocation.value?.id)
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 // Filter resources to show surplus resources, or the currently selected resource when editing
+// Sorted alphabetically by resource name
 const surplusResources = computed(() => {
   const surplusOnly = props.availableResources.filter(balance => balance.status === 'surplus');
 
@@ -39,12 +42,12 @@ const surplusResources = computed(() => {
     if (!hasCurrentResource) {
       const currentResource = props.availableResources.find(b => b.resource === formData.value.resource);
       if (currentResource) {
-        return [...surplusOnly, currentResource];
+        return [...surplusOnly, currentResource].sort((a, b) => a.resource.localeCompare(b.resource));
       }
     }
   }
 
-  return surplusOnly;
+  return surplusOnly.sort((a, b) => a.resource.localeCompare(b.resource));
 });
 
 // Calculate preview amount
@@ -147,7 +150,7 @@ watch(() => props.isOpen, (isOpen) => {
         resource: '',
         toLocationId: '',
         mode: 'percentage',
-        value: 0
+        value: 100
       };
     }
   }

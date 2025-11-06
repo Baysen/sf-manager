@@ -25,10 +25,14 @@ export const PURITY_MULTIPLIERS = {
   pure: 2.0
 } as const;
 
-const allMiners = ref<Miner[]>(data.miners.map(miner => ({
-  ...miner,
-  category: miner.category as 'mineral' | 'oil' | 'water'
-})));
+// Sort miners alphabetically by name
+const allMiners = ref<Miner[]>(data.miners
+  .map(miner => ({
+    ...miner,
+    category: miner.category as 'mineral' | 'oil' | 'water'
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+);
 
 // Create a map of resource key names to display names
 const resourceMap = new Map<string, string>();
