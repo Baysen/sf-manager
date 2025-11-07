@@ -368,6 +368,7 @@ export function useCalculations() {
   ): PowerSummary => {
     const consumptionMap = new Map<string, number>();
     const localGenerationMap = new Map<string, number>();
+    const localGridContributionMap = new Map<string, number>();
 
     // Calculate power consumption from extraction lines
     for (const line of extractionLines) {
@@ -390,13 +391,19 @@ export function useCalculations() {
     }
 
     // Calculate LOCAL power generation (only generators NOT connected to grid)
+    // and LOCAL GRID CONTRIBUTION (generators connected to grid at THIS location)
     for (const line of powerGenerationLines) {
       const generator = getGeneratorByKeyName(line.generatorType);
       if (!generator) continue;
 
-      // Only count generators that are NOT connected to the global grid
-      if (!line.connectedToGrid) {
-        const power = calculatePowerGeneration(generator, line);
+      const power = calculatePowerGeneration(generator, line);
+
+      if (line.connectedToGrid) {
+        // This location's contribution to global grid
+        const current = localGridContributionMap.get(generator.name) || 0;
+        localGridContributionMap.set(generator.name, current + power);
+      } else {
+        // Local only generation (not connected to grid)
         const current = localGenerationMap.get(generator.name) || 0;
         localGenerationMap.set(generator.name, current + power);
       }
@@ -434,17 +441,25 @@ export function useCalculations() {
       consumption
     }));
 
+    const localGridBreakdown = Array.from(localGridContributionMap.entries()).map(([machineType, consumption]) => ({
+      machineType,
+      consumption
+    }));
+
     const totalConsumption = consumptionBreakdown.reduce((sum, item) => sum + item.consumption, 0);
     const localGeneration = generationBreakdown.reduce((sum, item) => sum + item.consumption, 0);
+    const localGridContribution = localGridBreakdown.reduce((sum, item) => sum + item.consumption, 0);
     const totalGeneration = localGeneration + globalGridGeneration;
 
     return {
       totalGeneration,
       localGeneration,
+      localGridContribution,
       globalGridGeneration,
       totalConsumption,
       netPower: totalGeneration - totalConsumption,
       generationBreakdown,
+      localGridBreakdown,
       consumptionBreakdown
     };
   };

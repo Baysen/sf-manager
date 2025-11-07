@@ -79,9 +79,11 @@ export interface PowerBreakdown {
 export interface PowerSummary {
   totalGeneration: number; // Total power generated (local + global grid)
   localGeneration: number; // Power generated locally (disconnected from grid)
+  localGridContribution: number; // Power THIS location contributes to global grid
   globalGridGeneration: number; // Power from global grid (connected generators across all locations)
   totalConsumption: number; // Total power consumed
   netPower: number; // (localGeneration + globalGridGeneration) - Consumption
   generationBreakdown: PowerBreakdown[]; // Breakdown by generator type (local only)
+  localGridBreakdown: PowerBreakdown[]; // Breakdown by generator type (connected to grid, local only)
   consumptionBreakdown: PowerBreakdown[]; // Breakdown by consumer type
 }

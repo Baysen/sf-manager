@@ -31,6 +31,7 @@ const netPowerColor = computed(() => {
 
 const hasGlobalGrid = computed(() => props.summary.globalGridGeneration > 0.01);
 const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
+const hasLocalGridContribution = computed(() => props.summary.localGridContribution > 0.01);
 </script>
 
 <template>
@@ -61,6 +62,32 @@ const hasLocalGeneration = computed(() => props.summary.localGeneration > 0.01);
             <span class="font-medium text-chart-3">
               {{ formatPower(summary.globalGridGeneration) }} MW
             </span>
+          </div>
+
+          <!-- Local Grid Contribution (if any) -->
+          <div v-if="hasLocalGridContribution" class="ml-5 mt-1">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="text-muted-foreground">
+                Produced on site:
+              </span>
+              <span class="font-medium text-chart-3">
+                {{ formatPower(summary.localGridContribution) }} MW
+              </span>
+            </div>
+
+            <!-- Local Grid Contribution Breakdown by Type -->
+            <div v-if="summary.localGridBreakdown.length > 0" class="space-y-1 ml-3">
+              <div
+                v-for="item in summary.localGridBreakdown"
+                :key="item.machineType"
+                class="flex justify-between items-center text-xs"
+              >
+                <span class="text-muted-foreground">{{ item.machineType }}:</span>
+                <span class="font-medium text-chart-3">
+                  {{ formatPower(item.consumption) }} MW
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
