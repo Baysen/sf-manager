@@ -96,10 +96,12 @@ const powerSummary = computed(() => {
   if (!activeLocation.value) return {
     totalGeneration: 0,
     localGeneration: 0,
+    localGridContribution: 0,
     globalGridGeneration: 0,
     totalConsumption: 0,
     netPower: 0,
     generationBreakdown: [],
+    localGridBreakdown: [],
     consumptionBreakdown: []
   };
   return calculatePowerSummary(
