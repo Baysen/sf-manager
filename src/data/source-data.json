@@ -201,7 +201,7 @@
             "name": "Fuel Generator",
             "key_name": "fuel-generator",
             "category": "fuel-power",
-            "base_power": 150,
+            "base_power": 250,
             "power_consumption": 0,
             "type": "fuel"
         },
@@ -4695,8 +4695,8 @@
             "category": "coal-power",
             "time": 4,
             "ingredients": [
-                ["coal", 15],
-                ["water", 45]
+                ["coal", 1],
+                ["water", 3]
             ],
             "products": []
         },
@@ -4706,8 +4706,8 @@
             "category": "coal-power",
             "time": 4,
             "ingredients": [
-                ["compacted-coal", 7.5],
-                ["water", 45]
+                ["compacted-coal", 0.5],
+                ["water", 3]
             ],
             "products": []
         },
@@ -4717,7 +4717,7 @@
             "category": "fuel-power",
             "time": 6,
             "ingredients": [
-                ["fuel", 12]
+                ["fuel", 2]
             ],
             "products": []
         },
@@ -4727,7 +4727,7 @@
             "category": "fuel-power",
             "time": 6,
             "ingredients": [
-                ["liquid-biofuel", 12]
+                ["liquid-biofuel", 2]
             ],
             "products": []
         },
@@ -4737,7 +4737,7 @@
             "category": "fuel-power",
             "time": 8,
             "ingredients": [
-                ["turbofuel", 4.5]
+                ["turbofuel", 1]
             ],
             "products": []
         }
