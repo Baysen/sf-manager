@@ -278,45 +278,103 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
             <div
               v-for="(config, index) in overclockingConfigs"
               :key="index"
-              class="flex items-center gap-3 p-3 border rounded-lg"
+              class="space-y-3 p-3 border rounded-lg"
             >
-              <div class="flex-1 grid grid-cols-2 gap-3">
-                <div class="space-y-2">
-                  <Label :for="`count-${index}`" class="text-xs">Machine Count</Label>
-                  <Input
-                    :id="`count-${index}`"
-                    v-model.number="config.count"
-                    type="number"
-                    min="1"
-                    placeholder="Count"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <Label :for="`percentage-${index}`" class="text-xs">Clock Speed (%)</Label>
-                  <div class="flex gap-2">
+              <div class="flex items-center gap-3">
+                <div class="flex-1 grid grid-cols-2 gap-3">
+                  <div class="space-y-2">
+                    <Label :for="`count-${index}`" class="text-xs">Machine Count</Label>
                     <Input
-                      :id="`percentage-${index}`"
-                      v-model.number="config.percentage"
+                      :id="`count-${index}`"
+                      v-model.number="config.count"
                       type="number"
                       min="1"
-                      max="250"
-                      step="1"
-                      placeholder="100"
-                      class="flex-1"
+                      placeholder="Count"
                     />
+                  </div>
+                  <div class="space-y-2">
+                    <Label :for="`percentage-${index}`" class="text-xs">Clock Speed (%)</Label>
+                    <div class="flex gap-2">
+                      <Input
+                        :id="`percentage-${index}`"
+                        v-model.number="config.percentage"
+                        type="number"
+                        min="1"
+                        max="250"
+                        step="1"
+                        placeholder="100"
+                        class="flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  @click="removeOverclockingConfig(index)"
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  :disabled="overclockingConfigs.length === 1"
+                  class="mt-5"
+                >
+                  ×
+                </Button>
+              </div>
+
+              <!-- Per-Config Calculations -->
+              <div v-if="selectedGeneratorType" class="pt-2 border-t border-border/50 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-muted-foreground mb-1">Power Generation</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-chart-3 font-medium">
+                        {{ (
+                          (hasVariablePowerOutput && actualPower
+                            ? actualPower
+                            : allPowerGenerators.find(g => g.key_name === selectedGeneratorType)?.base_power || 0)
+                          * config.count
+                          * (config.percentage / 100)
+                        ).toFixed(2) }} MW
+                      </span>
+                    </div>
+                  </div>
+                  <div v-if="(allPowerGenerators.find(g => g.key_name === selectedGeneratorType)?.power_consumption || 0) > 0">
+                    <div class="text-muted-foreground mb-1">Power Consumption</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-chart-4 font-medium">
+                        {{ (
+                          (allPowerGenerators.find(g => g.key_name === selectedGeneratorType)?.power_consumption || 0)
+                          * config.count
+                          * Math.pow(config.percentage / 100, 1.6)
+                        ).toFixed(2) }} MW
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Fuel consumption for fuel-based generators -->
+                <div v-if="isFuelGenerator && selectedRecipeId" class="mt-2">
+                  <div class="text-muted-foreground mb-1">Fuel Consumption</div>
+                  <div class="space-y-0.5">
+                    <div v-for="input in availableRecipes.find(r => r.id === selectedRecipeId)?.inputs || []" :key="input.resource" class="flex items-center gap-1.5">
+                      <span>{{ input.resource }}:</span>
+                      <span class="text-destructive font-medium">
+                        {{ (input.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Waste production for fuel-based generators -->
+                <div v-if="isFuelGenerator && selectedRecipeId && (availableRecipes.find(r => r.id === selectedRecipeId)?.outputs.length || 0) > 0" class="mt-2">
+                  <div class="text-muted-foreground mb-1">Waste Production</div>
+                  <div class="space-y-0.5">
+                    <div v-for="output in availableRecipes.find(r => r.id === selectedRecipeId)?.outputs || []" :key="output.resource" class="flex items-center gap-1.5">
+                      <span>{{ output.resource }}:</span>
+                      <span class="text-chart-3 font-medium">
+                        {{ (output.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <Button
-                @click="removeOverclockingConfig(index)"
-                variant="ghost"
-                size="icon"
-                type="button"
-                :disabled="overclockingConfigs.length === 1"
-                class="mt-5"
-              >
-                ×
-              </Button>
             </div>
           </div>
 
