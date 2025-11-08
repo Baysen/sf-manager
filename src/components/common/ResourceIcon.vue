@@ -4,7 +4,7 @@ import { getIconPath, getDisplayName } from '../../utils/iconMapper';
 
 interface Props {
   resourceKey: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   showTooltip?: boolean;
 }
 
@@ -18,6 +18,7 @@ const displayName = computed(() => getDisplayName(props.resourceKey));
 
 const sizeClasses = computed(() => {
   const sizes = {
+    xs: 'w-4 h-4',
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
     lg: 'w-10 h-10',

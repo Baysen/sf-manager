@@ -212,56 +212,89 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
             <div
               v-for="(config, index) in overclockingConfigs"
               :key="index"
-              class="flex items-center gap-3 p-3 rounded-lg border bg-card"
+              class="space-y-3 p-3 rounded-lg border bg-card"
             >
-              <div class="flex-1 space-y-2">
-                <Label :for="`machine-count-${index}`" class="text-xs">Machine Count</Label>
-                <Input
-                  :id="`machine-count-${index}`"
-                  v-model.number="config.count"
-                  type="number"
-                  min="1"
-                />
+              <div class="flex items-center gap-3">
+                <div class="flex-1 space-y-2">
+                  <Label :for="`machine-count-${index}`" class="text-xs">Machine Count</Label>
+                  <Input
+                    :id="`machine-count-${index}`"
+                    v-model.number="config.count"
+                    type="number"
+                    min="1"
+                  />
+                </div>
+
+                <div class="flex-1 space-y-2">
+                  <Label :for="`clock-speed-${index}`" class="text-xs">Clock Speed (%)</Label>
+                  <Input
+                    :id="`clock-speed-${index}`"
+                    v-model.number="config.percentage"
+                    type="number"
+                    min="1"
+                    max="250"
+                  />
+                </div>
+
+                <div class="flex-1 space-y-2">
+                  <Label class="text-xs">Presets</Label>
+                  <div class="flex gap-1">
+                    <Button
+                      v-for="speed in presetClockSpeeds"
+                      :key="speed"
+                      @click="config.percentage = speed"
+                      variant="outline"
+                      size="sm"
+                      class="px-2 py-1 h-8 text-xs"
+                    >
+                      {{ speed }}
+                    </Button>
+                  </div>
+                </div>
+
+                <Button
+                  v-if="overclockingConfigs.length > 1"
+                  @click="removeOverclockingConfig(index)"
+                  variant="ghost"
+                  size="icon"
+                  class="text-destructive mt-5"
+                >
+                  <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </Button>
               </div>
 
-              <div class="flex-1 space-y-2">
-                <Label :for="`clock-speed-${index}`" class="text-xs">Clock Speed (%)</Label>
-                <Input
-                  :id="`clock-speed-${index}`"
-                  v-model.number="config.percentage"
-                  type="number"
-                  min="1"
-                  max="250"
-                />
-              </div>
-
-              <div class="flex-1 space-y-2">
-                <Label class="text-xs">Presets</Label>
-                <div class="flex gap-1">
-                  <Button
-                    v-for="speed in presetClockSpeeds"
-                    :key="speed"
-                    @click="config.percentage = speed"
-                    variant="outline"
-                    size="sm"
-                    class="px-2 py-1 h-8 text-xs"
-                  >
-                    {{ speed }}
-                  </Button>
+              <!-- Per-Config Calculations -->
+              <div v-if="selectedMinerType && selectedResourceType" class="pt-2 border-t border-border/50 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-muted-foreground mb-1">Extraction Rate</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-chart-3 font-medium">
+                        {{ (
+                          (allMiners.find(m => m.key_name === selectedMinerType)?.base_rate || 0)
+                          * (selectedPurity === 'impure' ? 0.5 : selectedPurity === 'normal' ? 1 : 2)
+                          * config.count
+                          * (config.percentage / 100)
+                        ).toFixed(2) }}/min
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-muted-foreground mb-1">Power Consumption</div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-chart-4 font-medium">
+                        {{ (
+                          (allMiners.find(m => m.key_name === selectedMinerType)?.power || 0)
+                          * config.count
+                          * Math.pow(config.percentage / 100, 1.6)
+                        ).toFixed(2) }} MW
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <Button
-                v-if="overclockingConfigs.length > 1"
-                @click="removeOverclockingConfig(index)"
-                variant="ghost"
-                size="icon"
-                class="text-destructive mt-5"
-              >
-                <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </Button>
             </div>
           </div>
 

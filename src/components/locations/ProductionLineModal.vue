@@ -384,6 +384,41 @@ const getSomersloopPresets = computed(() => {
                   Power: <span class="text-chart-4 font-semibold">{{ Math.pow(2, config.somersloops).toFixed(1) }}x</span>
                 </div>
               </div>
+
+              <!-- Per-Config Calculations -->
+              <div v-if="selectedRecipe" class="pt-2 border-t border-border/50 text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-muted-foreground mb-1">Inputs (per config)</div>
+                    <div class="space-y-0.5">
+                      <div v-for="input in selectedRecipe.inputs" :key="input.resource" class="flex items-center gap-1.5">
+                        <ResourceIcon :resource-key="input.resource" size="xs" />
+                        <span>{{ input.resource }}:</span>
+                        <span class="text-destructive font-medium">
+                          {{ (input.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-muted-foreground mb-1">Outputs (per config)</div>
+                    <div class="space-y-0.5">
+                      <div v-for="output in selectedRecipe.outputs" :key="output.resource" class="flex items-center gap-1.5">
+                        <ResourceIcon :resource-key="output.resource" size="xs" />
+                        <span>{{ output.resource }}:</span>
+                        <span class="text-chart-3 font-medium">
+                          {{ (output.amount * config.count * (config.percentage / 100) * (1 + (config.somersloops || 0) / (selectedRecipe.somersloopSlots || 1))).toFixed(2) }}/min
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-2 text-muted-foreground">
+                  Power: <span class="text-chart-4 font-medium">
+                    {{ (selectedRecipe.powerConsumption * config.count * Math.pow(config.percentage / 100, 1.6) * Math.pow(2, config.somersloops || 0)).toFixed(2) }} MW
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
