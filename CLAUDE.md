@@ -55,9 +55,9 @@ A web application to track and manage multiple factory locations in Satisfactory
 13. Pin/favorite locations to keep them at the top ✅
 
 ### Post-MVP (Phase 2)
-- Alphabetical sorting of all lists
+- Alphabetical sorting of all lists ✅
 - Grouping of production machines
-- Somersloop production multiplier support
+- Somersloop production multiplier support ✅
 - Ability to switch off production lines and/or whole groups
 - Better visualization of alternate recipes in dropdowns ✅
 - Split resource and recipe selection into separate dropdowns for easier use ✅
