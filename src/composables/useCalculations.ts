@@ -1,5 +1,5 @@
 import type { Recipe } from '../types/recipe';
-import type { ProductionLine, ResourceBalance, PowerBreakdown, PowerSummary, ResourceExtractionLine, PowerGenerationLine, Location, ImportDetail, ExportDetail } from '../types/location';
+import type { ProductionLine, ResourceBalance, PowerBreakdown, PowerSummary, ResourceExtractionLine, PowerGenerationLine, Location, ImportDetail, ExportDetail, ResourceAvailability } from '../types/location';
 import { useMiners, PURITY_MULTIPLIERS } from './useMiners';
 import { usePowerGenerators, type PowerGenerator } from './usePowerGenerators';
 
@@ -499,6 +499,60 @@ export function useCalculations() {
     };
   };
 
+  /**
+   * Calculate resource availability for a specific production line
+   * Shows how much of each input resource is available vs needed
+   *
+   * @param line - The production line to check
+   * @param recipe - The recipe being used
+   * @param resourceBalances - Pre-calculated resource balances for the location
+   * @returns Array of resource availability data for each input
+   */
+  const calculateLineResourceAvailability = (
+    line: ProductionLine,
+    recipe: Recipe,
+    resourceBalances: ResourceBalance[]
+  ): ResourceAvailability[] => {
+    const availabilities: ResourceAvailability[] = [];
+
+    // For each input resource this line needs
+    for (const input of recipe.inputs) {
+      const needed = calculateProductionRate(recipe, line, input.resource, true);
+
+      // Find this resource in the balance data
+      const balance = resourceBalances.find(b => b.resource === input.resource);
+
+      if (!balance) {
+        // Resource not in balance (shouldn't happen, but handle gracefully)
+        availabilities.push({
+          resource: input.resource,
+          needed,
+          available: 0,
+          hasDeficit: needed > 0
+        });
+        continue;
+      }
+
+      // Calculate what's available FOR this line
+      // This is: production + imports - (consumption by OTHER lines) - exports
+      // We add back this line's consumption since we're checking if THIS line has enough
+      const totalImports = balance.imports.reduce((sum, imp) => sum + imp.amount, 0);
+      const totalExports = balance.exports.reduce((sum, exp) => sum + exp.amount, 0);
+      const otherConsumption = balance.consumption - needed;
+
+      const available = balance.production + totalImports - otherConsumption - totalExports;
+
+      availabilities.push({
+        resource: input.resource,
+        needed,
+        available: Math.max(0, available), // Never show negative available
+        hasDeficit: available < needed
+      });
+    }
+
+    return availabilities;
+  };
+
   return {
     calculateProductionRate,
     calculatePowerConsumption,
@@ -508,6 +562,7 @@ export function useCalculations() {
     calculateGeneratorPowerConsumption,
     calculateResourceBalances,
     calculatePowerBreakdown,
-    calculatePowerSummary
+    calculatePowerSummary,
+    calculateLineResourceAvailability
   };
 }

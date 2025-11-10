@@ -112,7 +112,7 @@ const getTotalPower = () => {
                 <span class="text-muted-foreground">{{ group.minerName }} ({{ group.display }})</span>
                 <div class="flex items-center gap-1 flex-wrap">
                   <span v-for="(config, configIndex) in group.configs" :key="configIndex">
-                    <span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span>
+                    <span class="text-foreground">{{ config.count }}</span> @ <span class="text-foreground">{{ config.percentage }}%</span>
                     <span v-if="configIndex < group.configs.length - 1" class="text-muted-foreground mx-1">+</span>
                   </span>
                 </div>
@@ -126,8 +126,8 @@ const getTotalPower = () => {
           <div class="text-muted-foreground mb-1.5 font-medium">Inputs</div>
           <div class="text-muted-foreground text-xs">—</div>
           <div class="flex items-center gap-1.5 mt-2">
-            <Zap class="h-4 w-4 text-chart-4" />
-            <span class="text-chart-4 font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
+            <Zap class="h-4 w-4 text-muted-foreground" />
+            <span class="font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
           </div>
         </div>
 
@@ -138,7 +138,7 @@ const getTotalPower = () => {
             <ResourceIcon :resource-key="resource.key_name" size="sm" />
             <div class="flex flex-col">
               <span class="text-muted-foreground text-xs">{{ resource.name }}</span>
-              <span class="text-chart-3 font-medium">{{ getExtractionRate().toFixed(1) }}/min</span>
+              <span class="font-medium">{{ getExtractionRate().toFixed(1) }}/min</span>
             </div>
           </div>
         </div>

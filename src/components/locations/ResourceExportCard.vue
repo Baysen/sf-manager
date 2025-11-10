@@ -55,7 +55,7 @@ const handleDelete = () => {
             <div class="flex items-center gap-2">
               <TrendingUp class="h-4 w-4 text-muted-foreground" />
               <span class="text-muted-foreground">Export Amount:</span>
-              <span :class="['font-semibold', hasWarning ? 'text-chart-4' : 'text-chart-3']">
+              <span :class="['font-semibold', hasWarning ? 'text-chart-4' : '']">
                 {{ calculatedAmount.toFixed(1) }}/min
               </span>
             </div>

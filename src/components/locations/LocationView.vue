@@ -459,6 +459,7 @@ const getLocationName = (locationId: string): string => {
                 :key="line.id"
                 :production-line="line"
                 :recipe="getRecipeById(line.recipeId)!"
+                :resource-balances="resourceBalances"
                 @edit="handleEdit"
                 @delete="handleDelete"
               />
@@ -500,6 +501,7 @@ const getLocationName = (locationId: string): string => {
                 :key="line.id"
                 :power-line="line"
                 :generator="getGeneratorByKeyName(line.generatorType)!"
+                :resource-balances="resourceBalances"
                 @edit="handleEditPowerGeneration"
                 @delete="handleDeletePowerGeneration"
               />

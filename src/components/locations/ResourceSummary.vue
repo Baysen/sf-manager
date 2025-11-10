@@ -75,7 +75,7 @@ const formatRate = (rate: number) => {
           <div class="pl-1 space-y-1.5">
             <div>
               <span class="text-muted-foreground">Production:</span>
-              <span class="text-chart-3 ml-1 font-medium">+{{ formatRate(balance.production) }}/min</span>
+              <span class="ml-1 font-medium">+{{ formatRate(balance.production) }}/min</span>
             </div>
 
             <!-- Imports -->
@@ -88,7 +88,7 @@ const formatRate = (rate: number) => {
                 >
                   <span class="text-muted-foreground/70">From</span>
                   <span class="text-primary ml-1">{{ imp.fromLocationName }}</span>:
-                  <span class="text-chart-3 ml-1 font-medium">+{{ formatRate(imp.amount) }}/min</span>
+                  <span class="ml-1 font-medium">+{{ formatRate(imp.amount) }}/min</span>
                 </div>
               </div>
             </div>
@@ -96,7 +96,7 @@ const formatRate = (rate: number) => {
             <!-- Consumption -->
             <div>
               <span class="text-muted-foreground">Consumption:</span>
-              <span class="text-destructive ml-1 font-medium">-{{ formatRate(balance.consumption) }}/min</span>
+              <span class="ml-1 font-medium">-{{ formatRate(balance.consumption) }}/min</span>
             </div>
 
             <!-- Exports -->
@@ -109,7 +109,7 @@ const formatRate = (rate: number) => {
                 >
                   <span class="text-muted-foreground/70">To</span>
                   <span class="text-primary ml-1">{{ exp.toLocationName }}</span>:
-                  <span class="text-destructive ml-1 font-medium">-{{ formatRate(exp.amount) }}/min</span>
+                  <span class="ml-1 font-medium">-{{ formatRate(exp.amount) }}/min</span>
                 </div>
               </div>
             </div>
