@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useLocations } from '../../composables/useLocations';
 import { useRecipes } from '../../composables/useRecipes';
 import { useMiners } from '../../composables/useMiners';
 import { usePowerGenerators } from '../../composables/usePowerGenerators';
 import { useCalculations } from '../../composables/useCalculations';
+import { useCollapsibleSections } from '../../composables/useCollapsibleSections';
 import type { ProductionLine, ResourceExtractionLine, PowerGenerationLine, ResourceExport } from '../../types/location';
 import ResourceExtractionCard from './ResourceExtractionCard.vue';
 import ResourceExtractionModal from './ResourceExtractionModal.vue';
@@ -18,6 +19,7 @@ import ResourceSummary from './ResourceSummary.vue';
 import PowerSummary from './PowerSummary.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,13 +30,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
+import { Plus, ChevronDown } from 'lucide-vue-next';
 
 const { locations, activeLocation, addProductionLine, updateProductionLine, deleteProductionLine, addResourceExtractionLine, updateResourceExtractionLine, deleteResourceExtractionLine, addPowerGenerationLine, updatePowerGenerationLine, deletePowerGenerationLine, addResourceExport, updateResourceExport, deleteResourceExport } = useLocations();
 const { allRecipes, getRecipeById } = useRecipes();
 const { getMinerByKeyName, getResourceByKeyName } = useMiners();
 const { getGeneratorByKeyName } = usePowerGenerators();
 const { calculateResourceBalances, calculatePowerSummary } = useCalculations();
+
+// Collapsible sections state - reactive to active location changes
+const collapsibleSections = ref<ReturnType<typeof useCollapsibleSections> | null>(null);
+
+// Initialize collapsible sections when active location changes
+watch(
+  activeLocation,
+  (location) => {
+    if (location) {
+      collapsibleSections.value = useCollapsibleSections(location.id);
+    }
+  },
+  { immediate: true }
+);
 
 // Production line modal state
 const isModalOpen = ref(false);
@@ -369,118 +386,170 @@ const getLocationName = (locationId: string): string => {
     <!-- Left Panel (Resource Extraction & Production Lines) -->
     <div class="lg:col-span-2 space-y-8">
       <!-- Resource Extraction Section -->
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Resource Extraction</h2>
-          <Button @click="handleAddExtraction" size="sm">
-            <Plus class="h-4 w-4 mr-2" />
-            Add Extraction Line
-          </Button>
-        </div>
+      <Collapsible v-if="collapsibleSections" v-model:open="collapsibleSections.resourceExtractionOpen">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <CollapsibleTrigger class="flex items-center gap-2 hover:text-primary transition-colors group">
+              <ChevronDown
+                class="h-5 w-5 transition-transform duration-200"
+                :class="{ '-rotate-90': !collapsibleSections.resourceExtractionOpen }"
+              />
+              <h2 class="text-xl font-semibold">Resource Extraction</h2>
+              <Badge variant="secondary" class="ml-2">
+                {{ activeLocation.resourceExtractionLines.length }}
+              </Badge>
+            </CollapsibleTrigger>
+            <Button @click="handleAddExtraction" size="sm">
+              <Plus class="h-4 w-4 mr-2" />
+              Add Extraction Line
+            </Button>
+          </div>
 
-        <Card v-if="activeLocation.resourceExtractionLines.length === 0">
-          <CardContent class="p-8 text-center">
-            <p class="text-muted-foreground">No resource extraction lines yet. Add miners, oil extractors, or water extractors!</p>
-          </CardContent>
-        </Card>
+          <CollapsibleContent class="space-y-4">
+            <Card v-if="activeLocation.resourceExtractionLines.length === 0">
+              <CardContent class="p-8 text-center">
+                <p class="text-muted-foreground">No resource extraction lines yet. Add miners, oil extractors, or water extractors!</p>
+              </CardContent>
+            </Card>
 
-        <div v-else class="space-y-4">
-          <ResourceExtractionCard
-            v-for="line in validExtractionLines"
-            :key="line.id"
-            :extraction-line="line"
-            :resource="getResourceByKeyName(line.resourceType)!"
-            @edit="handleEditExtraction"
-            @delete="handleDeleteExtraction"
-          />
+            <div v-else class="space-y-4">
+              <ResourceExtractionCard
+                v-for="line in validExtractionLines"
+                :key="line.id"
+                :extraction-line="line"
+                :resource="getResourceByKeyName(line.resourceType)!"
+                @edit="handleEditExtraction"
+                @delete="handleDeleteExtraction"
+              />
+            </div>
+          </CollapsibleContent>
         </div>
-      </div>
+      </Collapsible>
 
       <!-- Production Lines Section -->
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Production Lines</h2>
-          <Button @click="handleAddProductionLine" size="sm">
-            <Plus class="h-4 w-4 mr-2" />
-            Add Production Line
-          </Button>
-        </div>
+      <Collapsible v-if="collapsibleSections" v-model:open="collapsibleSections.productionLinesOpen">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <CollapsibleTrigger class="flex items-center gap-2 hover:text-primary transition-colors group">
+              <ChevronDown
+                class="h-5 w-5 transition-transform duration-200"
+                :class="{ '-rotate-90': !collapsibleSections.productionLinesOpen }"
+              />
+              <h2 class="text-xl font-semibold">Production Lines</h2>
+              <Badge variant="secondary" class="ml-2">
+                {{ activeLocation.productionLines.length }}
+              </Badge>
+            </CollapsibleTrigger>
+            <Button @click="handleAddProductionLine" size="sm">
+              <Plus class="h-4 w-4 mr-2" />
+              Add Production Line
+            </Button>
+          </div>
 
-        <Card v-if="activeLocation.productionLines.length === 0">
-          <CardContent class="p-8 text-center">
-            <p class="text-muted-foreground">No production lines yet. Add one to get started!</p>
-          </CardContent>
-        </Card>
+          <CollapsibleContent class="space-y-4">
+            <Card v-if="activeLocation.productionLines.length === 0">
+              <CardContent class="p-8 text-center">
+                <p class="text-muted-foreground">No production lines yet. Add one to get started!</p>
+              </CardContent>
+            </Card>
 
-        <div v-else class="space-y-4">
-          <ProductionLineCard
-            v-for="line in validProductionLines"
-            :key="line.id"
-            :production-line="line"
-            :recipe="getRecipeById(line.recipeId)!"
-            @edit="handleEdit"
-            @delete="handleDelete"
-          />
+            <div v-else class="space-y-4">
+              <ProductionLineCard
+                v-for="line in validProductionLines"
+                :key="line.id"
+                :production-line="line"
+                :recipe="getRecipeById(line.recipeId)!"
+                @edit="handleEdit"
+                @delete="handleDelete"
+              />
+            </div>
+          </CollapsibleContent>
         </div>
-      </div>
+      </Collapsible>
 
       <!-- Power Generation Section -->
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Power Generation</h2>
-          <Button @click="handleAddPowerGeneration" size="sm" variant="secondary">
-            <Plus class="h-4 w-4 mr-2" />
-            Add Generator
-          </Button>
-        </div>
+      <Collapsible v-if="collapsibleSections" v-model:open="collapsibleSections.powerGenerationOpen">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <CollapsibleTrigger class="flex items-center gap-2 hover:text-primary transition-colors group">
+              <ChevronDown
+                class="h-5 w-5 transition-transform duration-200"
+                :class="{ '-rotate-90': !collapsibleSections.powerGenerationOpen }"
+              />
+              <h2 class="text-xl font-semibold">Power Generation</h2>
+              <Badge variant="secondary" class="ml-2">
+                {{ activeLocation.powerGenerationLines.length }}
+              </Badge>
+            </CollapsibleTrigger>
+            <Button @click="handleAddPowerGeneration" size="sm" variant="secondary">
+              <Plus class="h-4 w-4 mr-2" />
+              Add Generator
+            </Button>
+          </div>
 
-        <Card v-if="activeLocation.powerGenerationLines.length === 0">
-          <CardContent class="p-8 text-center">
-            <p class="text-muted-foreground">No power generators yet. Add biomass burners, coal generators, or other power sources!</p>
-          </CardContent>
-        </Card>
+          <CollapsibleContent class="space-y-4">
+            <Card v-if="activeLocation.powerGenerationLines.length === 0">
+              <CardContent class="p-8 text-center">
+                <p class="text-muted-foreground">No power generators yet. Add biomass burners, coal generators, or other power sources!</p>
+              </CardContent>
+            </Card>
 
-        <div v-else class="space-y-4">
-          <PowerGenerationCard
-            v-for="line in validPowerGenerationLines"
-            :key="line.id"
-            :power-line="line"
-            :generator="getGeneratorByKeyName(line.generatorType)!"
-            @edit="handleEditPowerGeneration"
-            @delete="handleDeletePowerGeneration"
-          />
+            <div v-else class="space-y-4">
+              <PowerGenerationCard
+                v-for="line in validPowerGenerationLines"
+                :key="line.id"
+                :power-line="line"
+                :generator="getGeneratorByKeyName(line.generatorType)!"
+                @edit="handleEditPowerGeneration"
+                @delete="handleDeletePowerGeneration"
+              />
+            </div>
+          </CollapsibleContent>
         </div>
-      </div>
+      </Collapsible>
 
       <!-- Resource Exports Section -->
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-semibold">Resource Exports</h2>
-          <Button @click="handleAddExport" size="sm" variant="secondary">
-            <Plus class="h-4 w-4 mr-2" />
-            Add Export
-          </Button>
-        </div>
+      <Collapsible v-if="collapsibleSections" v-model:open="collapsibleSections.resourceExportsOpen">
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <CollapsibleTrigger class="flex items-center gap-2 hover:text-primary transition-colors group">
+              <ChevronDown
+                class="h-5 w-5 transition-transform duration-200"
+                :class="{ '-rotate-90': !collapsibleSections.resourceExportsOpen }"
+              />
+              <h2 class="text-xl font-semibold">Resource Exports</h2>
+              <Badge variant="secondary" class="ml-2">
+                {{ activeLocation.exports.length }}
+              </Badge>
+            </CollapsibleTrigger>
+            <Button @click="handleAddExport" size="sm" variant="secondary">
+              <Plus class="h-4 w-4 mr-2" />
+              Add Export
+            </Button>
+          </div>
 
-        <Card v-if="activeLocation.exports.length === 0">
-          <CardContent class="p-8 text-center">
-            <p class="text-muted-foreground">No resource exports yet. Export surplus resources to other locations!</p>
-          </CardContent>
-        </Card>
+          <CollapsibleContent class="space-y-4">
+            <Card v-if="activeLocation.exports.length === 0">
+              <CardContent class="p-8 text-center">
+                <p class="text-muted-foreground">No resource exports yet. Export surplus resources to other locations!</p>
+              </CardContent>
+            </Card>
 
-        <div v-else class="space-y-4">
-          <ResourceExportCard
-            v-for="exp in sortedExports"
-            :key="exp.id"
-            :resource-export="exp"
-            :destination-location-name="getLocationName(exp.toLocationId)"
-            :calculated-amount="getExportAmount(exp)"
-            :has-warning="hasExportWarning(exp)"
-            @edit="handleEditExport"
-            @delete="handleDeleteExport"
-          />
+            <div v-else class="space-y-4">
+              <ResourceExportCard
+                v-for="exp in sortedExports"
+                :key="exp.id"
+                :resource-export="exp"
+                :destination-location-name="getLocationName(exp.toLocationId)"
+                :calculated-amount="getExportAmount(exp)"
+                :has-warning="hasExportWarning(exp)"
+                @edit="handleEditExport"
+                @delete="handleDeleteExport"
+              />
+            </div>
+          </CollapsibleContent>
         </div>
-      </div>
+      </Collapsible>
     </div>
 
     <!-- Right Panel (Summaries) -->
