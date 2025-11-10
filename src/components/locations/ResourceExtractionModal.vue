@@ -33,7 +33,7 @@ const emit = defineEmits<{
   save: [line: Omit<ResourceExtractionLine, 'id'>]
 }>()
 
-const { allMiners, extractableResources } = useMiners()
+const { allMiners, extractableResources, getResourceByKeyName } = useMiners()
 
 // Sort resources alphabetically
 const sortedExtractableResources = computed(() => {
@@ -41,12 +41,35 @@ const sortedExtractableResources = computed(() => {
 })
 
 // Form state
-const selectedMinerType = ref<string>('')
 const selectedResourceType = ref<string>('')
+const selectedMinerType = ref<string>('')
 const selectedPurity = ref<'impure' | 'normal' | 'pure'>('normal')
 const overclockingConfigs = ref<OverclockingConfig[]>([
   { count: 1, percentage: 100 }
 ])
+
+// Filter miners based on selected resource
+const compatibleMiners = computed(() => {
+  if (!selectedResourceType.value) return []
+
+  const resource = getResourceByKeyName(selectedResourceType.value)
+  if (!resource) return []
+
+  // Filter miners by matching category and sort alphabetically
+  return allMiners.value
+    .filter(miner => miner.category === resource.category)
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
+
+// Auto-select miner if only one option
+watch([selectedResourceType, compatibleMiners], ([resourceType, miners]) => {
+  if (resourceType && miners.length === 1 && miners[0]) {
+    selectedMinerType.value = miners[0].key_name
+  } else if (resourceType && !miners.find(m => m.key_name === selectedMinerType.value)) {
+    // Reset miner selection if current selection is not compatible
+    selectedMinerType.value = ''
+  }
+})
 
 // Calculate total machine count
 const totalMachineCount = computed(() => {
@@ -70,8 +93,8 @@ watch(() => props.isOpen, (isOpen) => {
 })
 
 const resetForm = () => {
-  selectedMinerType.value = ''
   selectedResourceType.value = ''
+  selectedMinerType.value = ''
   selectedPurity.value = 'normal'
   overclockingConfigs.value = [{ count: 1, percentage: 100 }]
 }
@@ -128,37 +151,14 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
       </DialogHeader>
 
       <div class="space-y-6 overflow-y-auto flex-1 pr-2">
-        <!-- Miner Type Selector -->
-        <div class="space-y-2">
-          <Label for="miner-type">
-            Miner/Extractor Type <span class="text-destructive">*</span>
-          </Label>
-          <Select v-model="selectedMinerType">
-            <SelectTrigger id="miner-type">
-              <SelectValue placeholder="Select miner type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem
-                  v-for="miner in allMiners"
-                  :key="miner.key_name"
-                  :value="miner.key_name"
-                >
-                  {{ miner.name }}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <!-- Resource Type Selector -->
+        <!-- Resource Type Selector (First) -->
         <div class="space-y-2">
           <Label for="resource-type">
             Resource <span class="text-destructive">*</span>
           </Label>
           <Select v-model="selectedResourceType">
             <SelectTrigger id="resource-type">
-              <SelectValue placeholder="Select resource..." />
+              <SelectValue placeholder="Select resource to extract..." />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -172,6 +172,34 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
               </SelectGroup>
             </SelectContent>
           </Select>
+        </div>
+
+        <!-- Miner Type Selector (Second, filtered by resource) -->
+        <div v-if="selectedResourceType" class="space-y-2">
+          <Label for="miner-type">
+            Miner/Extractor Type <span class="text-destructive">*</span>
+          </Label>
+          <Select v-model="selectedMinerType" :disabled="compatibleMiners.length === 1">
+            <SelectTrigger id="miner-type">
+              <SelectValue
+                :placeholder="compatibleMiners.length === 1 && compatibleMiners[0] ? compatibleMiners[0].name : 'Select miner type...'"
+              />
+            </SelectTrigger>
+            <SelectContent v-if="compatibleMiners.length > 1">
+              <SelectGroup>
+                <SelectItem
+                  v-for="miner in compatibleMiners"
+                  :key="miner.key_name"
+                  :value="miner.key_name"
+                >
+                  {{ miner.name }}
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <p v-if="compatibleMiners.length === 1" class="text-xs text-muted-foreground">
+            Only one extractor available for this resource
+          </p>
         </div>
 
         <!-- Node Purity Selector -->
