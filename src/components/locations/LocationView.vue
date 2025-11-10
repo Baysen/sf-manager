@@ -57,11 +57,11 @@ const validProductionLines = computed(() => {
     });
 });
 
-// Filter extraction lines to only show those with valid miners, sorted alphabetically by resource name
+// Filter extraction lines to only show those with valid resources, sorted alphabetically by resource name
 const validExtractionLines = computed(() => {
   if (!activeLocation.value) return [];
   return activeLocation.value.resourceExtractionLines
-    .filter(line => getMinerByKeyName(line.minerType) && getResourceByKeyName(line.resourceType))
+    .filter(line => getResourceByKeyName(line.resourceType))
     .sort((a, b) => {
       const resourceA = getResourceByKeyName(a.resourceType)?.name || '';
       const resourceB = getResourceByKeyName(b.resourceType)?.name || '';
@@ -330,7 +330,6 @@ const getLocationName = (locationId: string): string => {
             v-for="line in validExtractionLines"
             :key="line.id"
             :extraction-line="line"
-            :miner="getMinerByKeyName(line.minerType)!"
             :resource="getResourceByKeyName(line.resourceType)!"
             @edit="handleEditExtraction"
             @delete="handleDeleteExtraction"

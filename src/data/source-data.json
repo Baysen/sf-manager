@@ -178,6 +178,13 @@
             "category": "water",
             "base_rate": 120,
             "power": 20
+        },
+        {
+            "name": "Resource Well Pressurizer",
+            "key_name": "resource-well-pressurizer",
+            "category": "resource-well",
+            "base_rate": 60,
+            "power": 150
         }
     ],
     "power_generators": [
@@ -4811,7 +4818,7 @@
         },
         {
             "key_name": "nitrogen-gas",
-            "category": "water",
+            "category": "resource-well",
             "priority": 1,
             "weight": 40
         },

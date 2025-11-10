@@ -369,8 +369,11 @@ Validation:
 
 ### LocalStorage
 - Store all locations data under key: `satisfactory-manager-locations`
+- Store data format version under key: `satisfactory-manager-version`
 - Store app settings under key: `satisfactory-manager-settings`
 - Auto-save on every change
+- Version marker is updated whenever data is saved
+- On load, if version doesn't match current version, migration is triggered automatically
 
 ### Export/Import
 - Export button creates downloadable JSON file with timestamp in filename
@@ -382,30 +385,55 @@ Validation:
 **IT IS PARAMOUNT** that the export/import JSON format remains consistent and backward compatible. Any changes to the data structure MUST include a migration strategy.
 
 #### Data Format Consistency Rules:
-1. **MUST** maintain the current version format (currently `1.0.0`)
+1. **MUST** maintain the current version format (currently `2.0.0`)
 2. **MUST NOT** remove or rename existing fields without providing migration logic
 3. **MUST** increment version number when making breaking changes to the data structure
-4. **MUST** implement migration functions in `useStorage.ts` to handle older format versions
+4. **MUST** implement migration functions in `useMigrations.ts` to handle older format versions
 5. **MUST** test migration paths thoroughly before deploying changes
 
 #### Migration Strategy:
 When a breaking change to the data structure is required:
 
-1. **Increment the version number** in the export format (e.g., `1.0.0` → `2.0.0`)
-2. **Add migration logic** in the `loadLocations()` and `importData()` functions:
+1. **Increment the version number** in `useMigrations.ts` (e.g., `1.0.0` → `2.0.0`)
+2. **Add migration logic** in `useMigrations.ts`:
    ```typescript
    // Example migration from v1.0.0 to v2.0.0
-   if (!data.version || data.version === '1.0.0') {
+   if (version === '1.0.0') {
+     console.log('Migrating data from v1.0.0 to v2.0.0...');
      locations = migrateV1ToV2(locations);
+     version = '2.0.0';
    }
    ```
 3. **Document the migration** in comments explaining what changed and why
 4. **Test with real exports** from previous versions to ensure no data loss
 5. **Keep migration code indefinitely** - never remove old migration logic
 
+#### Migration System Architecture:
+- **Dedicated file**: `src/composables/useMigrations.ts` contains all migration logic
+- **Version tracking**: Both localStorage and export files include version markers
+- **Automatic migration**: `loadLocations()` and `importData()` automatically detect and migrate old versions
+- **Sequential migrations**: Migrations are applied in order (v1→v2→v3), allowing skipping versions
+- **One-time execution**: localStorage migrations save immediately after running, preventing re-migration
+
 #### Current Migrations Implemented:
-- **resourceExtractions → resourceExtractionLines**: Ensures all locations have the `resourceExtractionLines` array (even if empty)
-- **exports field**: Ensures all locations have the `exports` array (even if empty)
+
+##### v1.0.0 → v2.0.0 (Resource Extraction Refactor)
+**Changes:**
+- Moved `minerType` and `purity` from `ResourceExtractionLine` into `OverclockingConfig`
+- Groups multiple extraction lines for the same resource into one entry
+- Allows mixing different miner types and purities under one resource
+
+**Migration Logic:**
+- Groups old extraction lines by `resourceType`
+- Combines all lines for same resource into single entry
+- Moves `minerType` and `purity` into each overclocking config
+- Preserves all machine counts and clock speeds
+
+**Files Changed:**
+- `src/types/location.ts`: Updated `ResourceExtractionLine` and `OverclockingConfig`
+- `src/composables/useCalculations.ts`: Updated to handle nested miner types
+- `src/components/locations/ResourceExtractionModal.vue`: New UI for multiple configs
+- `src/components/locations/ResourceExtractionCard.vue`: Groups display by miner+purity
 
 #### When Adding New Fields:
 - **Optional fields**: Can be added without version bump, but must have safe defaults in migration logic
@@ -749,6 +777,34 @@ Use theme tokens in components:
 - `text-primary` for accent colors
 - `text-destructive` for errors
 - `text-chart-4` for highlights (yellow)
+
+#### ⚠️ CRITICAL: Responsive Class Usage
+
+**ALWAYS use responsive prefixes** (`sm:`, `md:`, `lg:`, etc.) when overriding component defaults, especially for width constraints.
+
+**Problem:**
+- DialogContent has a default class: `sm:max-w-lg`
+- Adding `max-w-4xl` without a prefix creates CSS specificity conflicts
+- Both classes apply, but which wins is unpredictable
+
+**Solution:**
+```vue
+<!-- ❌ WRONG - No responsive prefix -->
+<DialogContent class="max-w-4xl">
+
+<!-- ✅ CORRECT - Use responsive prefix -->
+<DialogContent class="sm:max-w-4xl">
+```
+
+**Rule of Thumb:**
+- If a default class has `sm:`, your override must also have `sm:` (or higher breakpoint)
+- This ensures consistent behavior across light/dark modes and all screen sizes
+- Check the component's default classes before adding overrides
+
+**Common Cases:**
+- Modals/Dialogs: Use `sm:max-w-*` to override default `sm:max-w-lg`
+- Containers: Use `max-w-*` without prefix only for elements without responsive defaults
+- Always test in both light and dark modes to verify
 
 #### Adding New Components
 ```bash

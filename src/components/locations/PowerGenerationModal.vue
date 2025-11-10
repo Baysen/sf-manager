@@ -164,7 +164,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
 
 <template>
   <Dialog :open="isOpen" @update:open="(open) => !open && emit('close')">
-    <DialogContent class="max-w-2xl max-h-[90vh] flex flex-col">
+    <DialogContent class="sm:max-w-2xl max-h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>
           {{ powerLine ? 'Edit Power Generator' : 'Add Power Generator' }}
