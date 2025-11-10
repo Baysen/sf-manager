@@ -18,6 +18,16 @@ import ResourceSummary from './ResourceSummary.vue';
 import PowerSummary from './PowerSummary.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Plus } from 'lucide-vue-next';
 
 const { locations, activeLocation, addProductionLine, updateProductionLine, deleteProductionLine, addResourceExtractionLine, updateResourceExtractionLine, deleteResourceExtractionLine, addPowerGenerationLine, updatePowerGenerationLine, deletePowerGenerationLine, addResourceExport, updateResourceExport, deleteResourceExport } = useLocations();
@@ -41,6 +51,19 @@ const editingPowerLine = ref<PowerGenerationLine | null>(null);
 // Resource export modal state
 const isExportModalOpen = ref(false);
 const editingExport = ref<ResourceExport | null>(null);
+
+// Delete confirmation dialogs state
+const deleteProductionDialogOpen = ref(false);
+const deletingProductionLine = ref<ProductionLine | null>(null);
+
+const deleteExtractionDialogOpen = ref(false);
+const deletingExtractionLine = ref<ResourceExtractionLine | null>(null);
+
+const deletePowerDialogOpen = ref(false);
+const deletingPowerLine = ref<PowerGenerationLine | null>(null);
+
+const deleteExportDialogOpen = ref(false);
+const deletingExport = ref<ResourceExport | null>(null);
 
 // Filter production lines to only show those with valid recipes, sorted alphabetically by recipe name
 // For alternate recipes, sort by baseName (the output resource) instead of the alternate name
@@ -124,9 +147,18 @@ const handleEdit = (lineId: string) => {
 
 const handleDelete = (lineId: string) => {
   if (!activeLocation.value) return;
-  if (confirm('Are you sure you want to delete this production line?')) {
-    deleteProductionLine(activeLocation.value.id, lineId);
+  const line = activeLocation.value.productionLines.find(l => l.id === lineId);
+  if (line) {
+    deletingProductionLine.value = line;
+    deleteProductionDialogOpen.value = true;
   }
+};
+
+const handleConfirmDeleteProduction = () => {
+  if (!activeLocation.value || !deletingProductionLine.value) return;
+  deleteProductionLine(activeLocation.value.id, deletingProductionLine.value.id);
+  deletingProductionLine.value = null;
+  deleteProductionDialogOpen.value = false;
 };
 
 const handleAddProductionLine = () => {
@@ -163,9 +195,18 @@ const handleEditExtraction = (lineId: string) => {
 
 const handleDeleteExtraction = (lineId: string) => {
   if (!activeLocation.value) return;
-  if (confirm('Are you sure you want to delete this extraction line?')) {
-    deleteResourceExtractionLine(activeLocation.value.id, lineId);
+  const line = activeLocation.value.resourceExtractionLines.find(l => l.id === lineId);
+  if (line) {
+    deletingExtractionLine.value = line;
+    deleteExtractionDialogOpen.value = true;
   }
+};
+
+const handleConfirmDeleteExtraction = () => {
+  if (!activeLocation.value || !deletingExtractionLine.value) return;
+  deleteResourceExtractionLine(activeLocation.value.id, deletingExtractionLine.value.id);
+  deletingExtractionLine.value = null;
+  deleteExtractionDialogOpen.value = false;
 };
 
 const handleAddExtraction = () => {
@@ -202,9 +243,18 @@ const handleEditPowerGeneration = (lineId: string) => {
 
 const handleDeletePowerGeneration = (lineId: string) => {
   if (!activeLocation.value) return;
-  if (confirm('Are you sure you want to delete this power generator?')) {
-    deletePowerGenerationLine(activeLocation.value.id, lineId);
+  const line = activeLocation.value.powerGenerationLines.find(l => l.id === lineId);
+  if (line) {
+    deletingPowerLine.value = line;
+    deletePowerDialogOpen.value = true;
   }
+};
+
+const handleConfirmDeletePower = () => {
+  if (!activeLocation.value || !deletingPowerLine.value) return;
+  deletePowerGenerationLine(activeLocation.value.id, deletingPowerLine.value.id);
+  deletingPowerLine.value = null;
+  deletePowerDialogOpen.value = false;
 };
 
 const handleAddPowerGeneration = () => {
@@ -241,9 +291,18 @@ const handleEditExport = (exportId: string) => {
 
 const handleDeleteExport = (exportId: string) => {
   if (!activeLocation.value) return;
-  if (confirm('Are you sure you want to delete this export?')) {
-    deleteResourceExport(activeLocation.value.id, exportId);
+  const exportItem = activeLocation.value.exports.find(e => e.id === exportId);
+  if (exportItem) {
+    deletingExport.value = exportItem;
+    deleteExportDialogOpen.value = true;
   }
+};
+
+const handleConfirmDeleteExport = () => {
+  if (!activeLocation.value || !deletingExport.value) return;
+  deleteResourceExport(activeLocation.value.id, deletingExport.value.id);
+  deletingExport.value = null;
+  deleteExportDialogOpen.value = false;
 };
 
 const handleAddExport = () => {
@@ -462,5 +521,89 @@ const getLocationName = (locationId: string): string => {
       @close="handleExportModalClose"
       @save="handleExportModalSave"
     />
+
+    <!-- Delete Production Line Confirmation Dialog -->
+    <AlertDialog v-model:open="deleteProductionDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Production Line?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this production line. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="handleConfirmDeleteProduction"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Delete Resource Extraction Confirmation Dialog -->
+    <AlertDialog v-model:open="deleteExtractionDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Resource Extraction?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this resource extraction line. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="handleConfirmDeleteExtraction"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Delete Power Generation Confirmation Dialog -->
+    <AlertDialog v-model:open="deletePowerDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Power Generator?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this power generation line. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="handleConfirmDeletePower"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <!-- Delete Resource Export Confirmation Dialog -->
+    <AlertDialog v-model:open="deleteExportDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Resource Export?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this resource export. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="handleConfirmDeleteExport"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
