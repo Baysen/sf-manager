@@ -1,16 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ResourceExtractionLine } from '../../types/location';
-import { useMiners, type Miner, type Resource } from '../../composables/useMiners';
+import { useMiners, type Resource } from '../../composables/useMiners';
 import { useCalculations } from '../../composables/useCalculations';
 import ResourceIcon from '../common/ResourceIcon.vue';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps<{
   extractionLine: ResourceExtractionLine;
-  miner: Miner;
   resource: Resource;
 }>();
 
@@ -19,36 +18,72 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
+const { getMinerByKeyName } = useMiners();
 const { calculateExtractionRate, calculateExtractionPower } = useCalculations();
 
-const getTotalMachines = (line: ResourceExtractionLine) => {
-  return line.overclocking.reduce((sum, config) => sum + config.count, 0);
+// Group extraction configs by miner type and purity (or satellites for resource wells)
+const groupedConfigs = computed(() => {
+  const groups: { [key: string]: { minerName: string; display: string; configs: typeof props.extractionLine.overclocking } } = {};
+
+  for (const config of props.extractionLine.overclocking) {
+    if (!config.minerType) continue;
+
+    const miner = getMinerByKeyName(config.minerType);
+    const minerName = miner?.name || config.minerType;
+
+    // Resource Well Pressurizer: show satellite breakdown
+    if (config.minerType === 'resource-well-pressurizer' && config.satellites) {
+      const satelliteSummary = config.satellites.map(s => s.purity).sort().join('-');
+      const key = `${config.minerType}-${satelliteSummary}`;
+
+      if (!groups[key]) {
+        const satelliteCount = config.satellites.length;
+        const purityBreakdown = config.satellites.reduce((acc, sat) => {
+          acc[sat.purity] = (acc[sat.purity] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const display = Object.entries(purityBreakdown)
+          .map(([purity, count]) => `${count}× ${purity}`)
+          .join(', ');
+
+        groups[key] = {
+          minerName,
+          display: `${satelliteCount} satellite${satelliteCount > 1 ? 's' : ''} (${display})`,
+          configs: []
+        };
+      }
+      groups[key].configs.push(config);
+    }
+    // Regular extractors: group by purity
+    else if (config.purity) {
+      const key = `${config.minerType}-${config.purity}`;
+      if (!groups[key]) {
+        groups[key] = {
+          minerName,
+          display: config.purity,
+          configs: []
+        };
+      }
+      groups[key].configs.push(config);
+    }
+  }
+
+  return Object.values(groups);
+});
+
+const getTotalMachines = () => {
+  return props.extractionLine.machineCount;
 };
 
 const getExtractionRate = () => {
-  return calculateExtractionRate(props.miner, props.extractionLine);
+  return calculateExtractionRate(props.extractionLine);
 };
 
 const getTotalPower = () => {
-  return calculateExtractionPower(props.miner, props.extractionLine);
+  return calculateExtractionPower(props.extractionLine);
 };
 
-const getPurityLabel = (purity: string) => {
-  return purity.charAt(0).toUpperCase() + purity.slice(1);
-};
-
-const getPurityVariant = (purity: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
-  switch (purity) {
-    case 'impure':
-      return 'destructive';
-    case 'normal':
-      return 'default';
-    case 'pure':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-};
 </script>
 
 <template>
@@ -58,14 +93,9 @@ const getPurityVariant = (purity: string): 'default' | 'secondary' | 'destructiv
         <div class="flex items-center gap-3">
           <ResourceIcon :resource-key="resource.key_name" size="md" />
           <div>
-            <div class="flex items-center gap-2 mb-1">
-              <h4 class="text-base font-semibold">{{ resource.name }}</h4>
-              <Badge :variant="getPurityVariant(extractionLine.purity)" class="text-xs">
-                {{ getPurityLabel(extractionLine.purity) }}
-              </Badge>
-            </div>
+            <h4 class="text-base font-semibold mb-1">{{ resource.name }}</h4>
             <p class="text-xs text-muted-foreground">
-              {{ miner.name }} • {{ getTotalMachines(extractionLine) }} machines
+              {{ getTotalMachines() }} total machines
             </p>
           </div>
         </div>
@@ -89,9 +119,22 @@ const getPurityVariant = (purity: string): 'default' | 'secondary' | 'destructiv
         </div>
       </div>
 
-      <div class="text-xs text-muted-foreground mb-3 space-y-0.5">
-        <div v-for="(config, index) in extractionLine.overclocking" :key="index">
-          <span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span>
+      <!-- Grouped extraction details -->
+      <div class="text-xs mb-3 space-y-2">
+        <div
+          v-for="(group, index) in groupedConfigs"
+          :key="index"
+          class="flex items-center gap-2 flex-wrap"
+        >
+          <span class="text-muted-foreground">{{ group.minerName }}</span>
+          <span class="text-muted-foreground">{{ group.display }}</span>
+          <span class="text-muted-foreground">•</span>
+          <div class="flex items-center gap-1">
+            <span v-for="(config, configIndex) in group.configs" :key="configIndex">
+              <span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span>
+              <span v-if="configIndex < group.configs.length - 1" class="text-muted-foreground mx-1">+</span>
+            </span>
+          </div>
         </div>
       </div>
 

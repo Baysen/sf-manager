@@ -7,7 +7,7 @@ const data = rawSourceData as unknown as SourceData;
 export interface Miner {
   name: string;
   key_name: string;
-  category: 'mineral' | 'oil' | 'water';
+  category: 'mineral' | 'oil' | 'water' | 'resource-well';
   base_rate: number; // items per minute at 100%
   power: number; // MW at 100%
 }
@@ -15,7 +15,7 @@ export interface Miner {
 export interface Resource {
   key_name: string;
   name: string;
-  category: 'mineral' | 'oil' | 'water';
+  category: 'mineral' | 'oil' | 'water' | 'resource-well';
 }
 
 // Purity multipliers for resource nodes

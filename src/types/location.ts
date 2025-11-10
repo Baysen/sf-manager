@@ -2,6 +2,11 @@ export interface OverclockingConfig {
   count: number; // number of machines at this speed
   percentage: number; // 100, 150, 250, etc.
   somersloops?: number; // Number of somersloops per machine in this config
+  // For resource extraction lines only:
+  minerType?: string; // miner-mk1, miner-mk2, oil-pump, water-extractor, resource-well-pressurizer, etc.
+  purity?: 'impure' | 'normal' | 'pure'; // node purity (for regular extractors)
+  // For resource well pressurizers only:
+  satellites?: Array<{ purity: 'impure' | 'normal' | 'pure' }>; // up to 8 satellite nodes
 }
 
 export interface ProductionLine {
@@ -13,9 +18,17 @@ export interface ProductionLine {
 
 export interface ResourceExtractionLine {
   id: string;
-  minerType: string; // miner-mk1, miner-mk2, oil-pump, water-extractor, etc.
   resourceType: string; // iron-ore, copper-ore, crude-oil, water, etc.
-  purity: 'impure' | 'normal' | 'pure'; // node purity
+  machineCount: number; // Total count (sum of all overclocking configs)
+  overclocking: OverclockingConfig[]; // Each config now includes minerType and purity
+}
+
+// Legacy v1.0.0 structure for migration
+export interface ResourceExtractionLineV1 {
+  id: string;
+  minerType: string;
+  resourceType: string;
+  purity: 'impure' | 'normal' | 'pure';
   machineCount: number;
   overclocking: OverclockingConfig[];
 }

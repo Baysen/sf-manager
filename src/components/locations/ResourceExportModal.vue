@@ -173,7 +173,7 @@ const handleClose = () => {
     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
     @click.self="handleClose"
   >
-    <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl mx-4 border border-gray-700">
+    <div class="bg-gray-800 rounded-lg shadow-xl w-full sm:max-w-2xl mx-4 border border-gray-700">
       <div class="flex items-center justify-between p-4 border-b border-gray-700">
         <h3 class="text-lg font-semibold text-white">
           {{ resourceExport ? 'Edit Resource Export' : 'Add Resource Export' }}

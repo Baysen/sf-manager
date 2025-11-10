@@ -56,7 +56,7 @@ const closeModal = () => {
 
   <!-- Add Location Modal -->
   <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeModal">
-    <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-gray-700">
+    <div class="bg-gray-800 rounded-lg p-6 sm:max-w-md w-full mx-4 border border-gray-700">
       <h3 class="text-lg font-semibold text-white mb-4">Add New Location</h3>
       <input
         v-model="newLocationName"

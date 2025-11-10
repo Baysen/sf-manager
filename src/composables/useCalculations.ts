@@ -1,6 +1,6 @@
 import type { Recipe } from '../types/recipe';
 import type { ProductionLine, ResourceBalance, PowerBreakdown, PowerSummary, ResourceExtractionLine, PowerGenerationLine, Location, ImportDetail, ExportDetail } from '../types/location';
-import { useMiners, PURITY_MULTIPLIERS, type Miner } from './useMiners';
+import { useMiners, PURITY_MULTIPLIERS } from './useMiners';
 import { usePowerGenerators, type PowerGenerator } from './usePowerGenerators';
 
 /**
@@ -38,27 +38,48 @@ export function useCalculations() {
   const { getGeneratorByKeyName } = usePowerGenerators();
 
   const calculateExtractionRate = (
-    miner: Miner,
     extractionLine: ResourceExtractionLine
   ): number => {
-    const purityMultiplier = PURITY_MULTIPLIERS[extractionLine.purity];
     let totalRate = 0;
 
     for (const overclock of extractionLine.overclocking) {
+      if (!overclock.minerType) continue;
+
+      const miner = getMinerByKeyName(overclock.minerType);
+      if (!miner) continue;
+
       const speedMultiplier = overclock.percentage / 100;
-      totalRate += miner.base_rate * purityMultiplier * overclock.count * speedMultiplier;
+
+      // Resource Well Pressurizer: sum satellite outputs
+      if (overclock.minerType === 'resource-well-pressurizer' && overclock.satellites) {
+        const satelliteRate = overclock.satellites.reduce((sum, sat) => {
+          const purityMultiplier = PURITY_MULTIPLIERS[sat.purity];
+          return sum + (miner.base_rate * purityMultiplier);
+        }, 0);
+        totalRate += satelliteRate * overclock.count * speedMultiplier;
+      }
+      // Regular extractors: use purity from config
+      else if (overclock.purity) {
+        const purityMultiplier = PURITY_MULTIPLIERS[overclock.purity];
+        totalRate += miner.base_rate * purityMultiplier * overclock.count * speedMultiplier;
+      }
     }
 
     return totalRate;
   };
 
   const calculateExtractionPower = (
-    miner: Miner,
     extractionLine: ResourceExtractionLine
   ): number => {
     let totalPower = 0;
 
     for (const overclock of extractionLine.overclocking) {
+      // Each overclock config now has its own minerType
+      if (!overclock.minerType) continue;
+
+      const miner = getMinerByKeyName(overclock.minerType);
+      if (!miner) continue;
+
       const speedMultiplier = overclock.percentage / 100;
       const powerMultiplier = Math.pow(speedMultiplier, 1.6);
       totalPower += miner.power * overclock.count * powerMultiplier;
@@ -164,12 +185,11 @@ export function useCalculations() {
 
     // Add resource extraction (production only)
     for (const line of extractionLines) {
-      const miner = getMinerByKeyName(line.minerType);
       const resource = getResourceByKeyName(line.resourceType);
-      if (!miner || !resource) continue;
+      if (!resource) continue;
 
       const current = resourceMap.get(resource.name) || { production: 0, consumption: 0, imports: [], exports: [] };
-      current.production += calculateExtractionRate(miner, line);
+      current.production += calculateExtractionRate(line);
       resourceMap.set(resource.name, current);
     }
 
@@ -230,11 +250,10 @@ export function useCalculations() {
 
           // Add source extraction
           for (const line of otherLocation.resourceExtractionLines) {
-            const miner = getMinerByKeyName(line.minerType);
             const resource = getResourceByKeyName(line.resourceType);
-            if (!miner || !resource) continue;
+            if (!resource) continue;
             const current = sourceResourceMap.get(resource.name) || { production: 0, consumption: 0 };
-            current.production += calculateExtractionRate(miner, line);
+            current.production += calculateExtractionRate(line);
             sourceResourceMap.set(resource.name, current);
           }
 
@@ -335,12 +354,20 @@ export function useCalculations() {
 
     // Add extraction line power
     for (const line of extractionLines) {
-      const miner = getMinerByKeyName(line.minerType);
-      if (!miner) continue;
+      // Each extraction line can have multiple miner types in its overclocking configs
+      for (const overclock of line.overclocking) {
+        if (!overclock.minerType) continue;
 
-      const power = calculateExtractionPower(miner, line);
-      const current = powerMap.get(miner.name) || 0;
-      powerMap.set(miner.name, current + power);
+        const miner = getMinerByKeyName(overclock.minerType);
+        if (!miner) continue;
+
+        const speedMultiplier = overclock.percentage / 100;
+        const powerMultiplier = Math.pow(speedMultiplier, 1.6);
+        const power = miner.power * overclock.count * powerMultiplier;
+
+        const current = powerMap.get(miner.name) || 0;
+        powerMap.set(miner.name, current + power);
+      }
     }
 
     // Add production line power
@@ -372,12 +399,20 @@ export function useCalculations() {
 
     // Calculate power consumption from extraction lines
     for (const line of extractionLines) {
-      const miner = getMinerByKeyName(line.minerType);
-      if (!miner) continue;
+      // Each extraction line can have multiple miner types in its overclocking configs
+      for (const overclock of line.overclocking) {
+        if (!overclock.minerType) continue;
 
-      const power = calculateExtractionPower(miner, line);
-      const current = consumptionMap.get(miner.name) || 0;
-      consumptionMap.set(miner.name, current + power);
+        const miner = getMinerByKeyName(overclock.minerType);
+        if (!miner) continue;
+
+        const speedMultiplier = overclock.percentage / 100;
+        const powerMultiplier = Math.pow(speedMultiplier, 1.6);
+        const power = miner.power * overclock.count * powerMultiplier;
+
+        const current = consumptionMap.get(miner.name) || 0;
+        consumptionMap.set(miner.name, current + power);
+      }
     }
 
     // Calculate power consumption from production lines

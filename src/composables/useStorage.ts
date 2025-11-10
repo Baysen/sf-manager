@@ -1,27 +1,40 @@
 import { watch } from 'vue';
 import type { Ref } from 'vue';
 import type { Location } from '../types/location';
+import { migrateData, validateImportData, CURRENT_VERSION } from './useMigrations';
 
 const LOCATIONS_KEY = 'satisfactory-manager-locations';
+const VERSION_KEY = 'satisfactory-manager-version';
 
 export function useStorage() {
   const saveLocations = (locations: Location[]) => {
     localStorage.setItem(LOCATIONS_KEY, JSON.stringify(locations));
+    localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
   };
 
   const loadLocations = (): Location[] => {
     const data = localStorage.getItem(LOCATIONS_KEY);
     if (!data) return [];
 
-    const locations = JSON.parse(data) as Location[];
+    const version = localStorage.getItem(VERSION_KEY);
+    const parsedData = JSON.parse(data);
 
-    // Migrate old data: ensure all locations have resourceExtractionLines, powerGenerationLines, and exports
-    return locations.map(location => ({
-      ...location,
-      resourceExtractionLines: location.resourceExtractionLines || [],
-      powerGenerationLines: location.powerGenerationLines || [],
-      exports: location.exports || []
-    }));
+    // Wrap data with version info for migration system
+    const dataWithVersion = {
+      version: version || '1.0.0', // Default to 1.0.0 if no version marker
+      locations: Array.isArray(parsedData) ? parsedData : parsedData.locations || []
+    };
+
+    // Apply migrations to bring data to current version
+    const migratedLocations = migrateData(dataWithVersion);
+
+    // Save migrated data with current version marker
+    if (version !== CURRENT_VERSION) {
+      console.log(`Migrated localStorage from ${version || '1.0.0'} to ${CURRENT_VERSION}`);
+      saveLocations(migratedLocations);
+    }
+
+    return migratedLocations;
   };
 
   const autoSave = (locationsRef: Ref<Location[]>) => {
@@ -32,7 +45,7 @@ export function useStorage() {
 
   const exportData = (locations: Location[]) => {
     const exportData = {
-      version: '1.0.0',
+      version: CURRENT_VERSION,
       exportDate: new Date().toISOString(),
       locations
     };
@@ -44,22 +57,6 @@ export function useStorage() {
     link.download = `satisfactory-manager-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  };
-
-  const validateImportData = (data: any): data is { version: string; locations: Location[] } => {
-    if (!data || typeof data !== 'object') return false;
-    if (!data.version || typeof data.version !== 'string') return false;
-    if (!Array.isArray(data.locations)) return false;
-
-    // Validate each location has required fields
-    return data.locations.every((loc: any) =>
-      loc &&
-      typeof loc === 'object' &&
-      typeof loc.id === 'string' &&
-      typeof loc.name === 'string' &&
-      Array.isArray(loc.productionLines) &&
-      Array.isArray(loc.resourceExtractionLines)
-    );
   };
 
   const importData = async (file: File): Promise<Location[]> => {
@@ -74,13 +71,8 @@ export function useStorage() {
             return;
           }
 
-          // Migrate data if needed
-          const locations = data.locations.map(location => ({
-            ...location,
-            resourceExtractionLines: location.resourceExtractionLines || [],
-            powerGenerationLines: location.powerGenerationLines || [],
-            exports: location.exports || []
-          }));
+          // Apply migrations to bring data to current version
+          const locations = migrateData(data);
 
           resolve(locations);
         } catch (error) {
