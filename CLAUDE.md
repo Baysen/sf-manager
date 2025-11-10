@@ -62,10 +62,10 @@ A web application to track and manage multiple factory locations in Satisfactory
 - Better visualization of alternate recipes in dropdowns ✅
 - Split resource and recipe selection into separate dropdowns for easier use ✅
 - Add power creation machines ✅
-- Limit resource extraction machines to the resources they can actually extract
+- Limit resource extraction machines to the resources they can actually extract ✅
 - Overview page summarizing all locations
 - Accordion-like functionality to be able to collapse sections (Resource Extraction, ...)
-- Manual sorting of locations (drag and drop)
+- Manual grouping of locations (+ drag and drop)
 - i8n
 
 ### Post-MVP (Phase 3)
