@@ -522,7 +522,7 @@ const handleSave = () => {
                   <div>
                     <div class="text-muted-foreground mb-1">Extraction Rate</div>
                     <div class="flex items-center gap-1.5">
-                      <span class="text-chart-3 font-medium">
+                      <span class="font-medium">
                         {{ calculateConfigRate(config).toFixed(2) }}/min
                       </span>
                     </div>
@@ -530,7 +530,7 @@ const handleSave = () => {
                   <div>
                     <div class="text-muted-foreground mb-1">Power Consumption</div>
                     <div class="flex items-center gap-1.5">
-                      <span class="text-chart-4 font-medium">
+                      <span class="font-medium">
                         {{ calculateConfigPower(config).toFixed(2) }} MW
                       </span>
                     </div>

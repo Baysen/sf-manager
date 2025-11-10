@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { PowerGenerationLine } from '../../types/location';
+import { computed } from 'vue';
+import type { PowerGenerationLine, ResourceBalance } from '../../types/location';
 import { usePowerGenerators, type PowerGenerator } from '../../composables/usePowerGenerators';
 import { useCalculations } from '../../composables/useCalculations';
 import { useRecipes } from '../../composables/useRecipes';
@@ -7,7 +8,7 @@ import ResourceIcon from '../common/ResourceIcon.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Pencil, Trash2, Zap, Globe } from 'lucide-vue-next';
+import { MoreVertical, Pencil, Trash2, Zap, Globe, TriangleAlert } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,7 @@ import {
 const props = defineProps<{
   powerLine: PowerGenerationLine;
   generator: PowerGenerator;
+  resourceBalances: ResourceBalance[];
 }>();
 
 const emit = defineEmits<{
@@ -26,7 +28,7 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
-const { calculatePowerGeneration, calculateProductionRate } = useCalculations();
+const { calculatePowerGeneration, calculateProductionRate, calculateLineResourceAvailability } = useCalculations();
 const { getRecipeById } = useRecipes();
 
 const getTotalMachines = (line: PowerGenerationLine) => {
@@ -45,6 +47,16 @@ const getRecipe = () => {
 const getRecipeName = () => {
   const recipe = getRecipe();
   return recipe?.name || props.generator.name;
+};
+
+const resourceAvailabilities = computed(() => {
+  const recipe = getRecipe();
+  if (!recipe) return [];
+  return calculateLineResourceAvailability(props.powerLine as any, recipe, props.resourceBalances);
+});
+
+const getAvailability = (resourceName: string) => {
+  return resourceAvailabilities.value.find(ra => ra.resource === resourceName);
 };
 </script>
 
@@ -68,13 +80,13 @@ const getRecipeName = () => {
             <p class="text-xs text-muted-foreground mb-2">{{ generator.name }}</p>
             <div class="text-xs text-muted-foreground space-y-0.5">
               <div v-for="(config, index) in powerLine.overclocking" :key="index">
-                <span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span>
+                <span class="text-foreground">{{ config.count }}</span> @ <span class="text-foreground">{{ config.percentage }}%</span>
               </div>
             </div>
             <!-- Variable power input for geothermal -->
             <div v-if="generator.type === 'geothermal' && generator.variable_power && powerLine.actualPower" class="mt-2 text-xs pt-2 border-t border-border/50">
               <span class="text-muted-foreground">Actual:</span>
-              <span class="text-chart-4 ml-1 font-medium">{{ powerLine.actualPower }} MW</span>
+              <span class="ml-1 font-medium">{{ powerLine.actualPower }} MW</span>
             </div>
           </div>
         </div>
@@ -87,9 +99,24 @@ const getRecipeName = () => {
               <ResourceIcon :resource-key="input.resource" size="sm" />
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ input.resource }}</span>
-                <span class="text-destructive font-medium">
-                  {{ calculateProductionRate(getRecipe()!, powerLine as any, input.resource, true).toFixed(1) }}/min
-                </span>
+                <div class="flex items-center gap-1">
+                  <span
+                    v-if="getAvailability(input.resource)"
+                    :class="[
+                      'font-medium',
+                      getAvailability(input.resource)!.hasDeficit ? 'text-destructive' : ''
+                    ]"
+                  >
+                    {{ getAvailability(input.resource)!.available.toFixed(1) }} / {{ getAvailability(input.resource)!.needed.toFixed(1) }}
+                  </span>
+                  <span v-else class="font-medium">
+                    {{ calculateProductionRate(getRecipe()!, powerLine as any, input.resource, true).toFixed(1) }} / min
+                  </span>
+                  <TriangleAlert
+                    v-if="getAvailability(input.resource)?.hasDeficit"
+                    class="h-3 w-3 text-destructive"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -100,8 +127,8 @@ const getRecipeName = () => {
         <div class="text-xs">
           <div class="text-muted-foreground mb-1.5 font-medium">Output</div>
           <div class="flex items-center gap-1.5 mb-2">
-            <Zap class="h-4 w-4 text-chart-4" />
-            <span class="text-chart-3 font-medium">{{ getPowerGeneration().toFixed(1) }} MW</span>
+            <Zap class="h-4 w-4 text-muted-foreground" />
+            <span class="font-medium">{{ getPowerGeneration().toFixed(1) }} MW</span>
           </div>
           <!-- Waste products (e.g., Uranium Waste) -->
           <div v-if="getRecipe() && getRecipe()!.outputs.length > 0" class="space-y-1">
@@ -109,7 +136,7 @@ const getRecipeName = () => {
               <ResourceIcon :resource-key="output.resource" size="sm" />
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ output.resource }}</span>
-                <span class="text-chart-3 font-medium">
+                <span class="font-medium">
                   {{ calculateProductionRate(getRecipe()!, powerLine as any, output.resource, false).toFixed(1) }}/min
                 </span>
               </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { ProductionLine } from '../../types/location';
+import type { ProductionLine, ResourceBalance } from '../../types/location';
 import type { Recipe } from '../../types/recipe';
 import { useCalculations } from '../../composables/useCalculations';
 import ResourceIcon from '../common/ResourceIcon.vue';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Pencil, Trash2, Zap } from 'lucide-vue-next';
+import { MoreVertical, Pencil, Trash2, Zap, TriangleAlert } from 'lucide-vue-next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import {
 const props = defineProps<{
   productionLine: ProductionLine;
   recipe: Recipe;
+  resourceBalances: ResourceBalance[];
 }>();
 
 const emit = defineEmits<{
@@ -26,7 +27,7 @@ const emit = defineEmits<{
   delete: [id: string];
 }>();
 
-const { calculateProductionRate, calculatePowerConsumption } = useCalculations();
+const { calculateProductionRate, calculatePowerConsumption, calculateLineResourceAvailability } = useCalculations();
 
 const getTotalMachines = (line: ProductionLine) => {
   return line.overclocking.reduce((sum, config) => sum + config.count, 0);
@@ -43,6 +44,14 @@ const getTotalPower = () => {
 const hasSomersloops = computed(() => {
   return props.productionLine.overclocking.some(config => config.somersloops && config.somersloops > 0);
 });
+
+const resourceAvailabilities = computed(() => {
+  return calculateLineResourceAvailability(props.productionLine, props.recipe, props.resourceBalances);
+});
+
+const getAvailability = (resourceName: string) => {
+  return resourceAvailabilities.value.find(ra => ra.resource === resourceName);
+};
 </script>
 
 <template>
@@ -72,7 +81,7 @@ const hasSomersloops = computed(() => {
             <p class="text-xs text-muted-foreground mb-2">{{ recipe.machine }}</p>
             <div class="text-xs text-muted-foreground space-y-0.5">
               <div v-for="(config, index) in productionLine.overclocking" :key="index" class="flex items-center gap-2 flex-wrap">
-                <span><span class="text-foreground">{{ config.count }}</span> @ <span class="text-chart-4">{{ config.percentage }}%</span></span>
+                <span><span class="text-foreground">{{ config.count }}</span> @ <span class="text-foreground">{{ config.percentage }}%</span></span>
                 <template v-if="recipe.somersloopSlots && recipe.somersloopSlots > 0 && config.somersloops && config.somersloops > 0">
                   <span class="text-muted-foreground">•</span>
                   <div class="flex gap-0">
@@ -99,13 +108,30 @@ const hasSomersloops = computed(() => {
               <ResourceIcon :resource-key="input.resource" size="sm" />
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ input.resource }}</span>
-                <span class="text-destructive font-medium">{{ getCalculatedRate(input.resource, true).toFixed(1) }}/min</span>
+                <div class="flex items-center gap-1">
+                  <span
+                    v-if="getAvailability(input.resource)"
+                    :class="[
+                      'font-medium',
+                      getAvailability(input.resource)!.hasDeficit ? 'text-destructive' : ''
+                    ]"
+                  >
+                    {{ getAvailability(input.resource)!.available.toFixed(1) }} / {{ getAvailability(input.resource)!.needed.toFixed(1) }}
+                  </span>
+                  <span v-else class="font-medium">
+                    {{ getCalculatedRate(input.resource, true).toFixed(1) }} / min
+                  </span>
+                  <TriangleAlert
+                    v-if="getAvailability(input.resource)?.hasDeficit"
+                    class="h-3 w-3 text-destructive"
+                  />
+                </div>
               </div>
             </div>
           </div>
           <div class="flex items-center gap-1.5 mt-2">
-            <Zap class="h-4 w-4 text-chart-4" />
-            <span class="text-chart-4 font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
+            <Zap class="h-4 w-4 text-muted-foreground" />
+            <span class="font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
           </div>
         </div>
 
@@ -117,7 +143,7 @@ const hasSomersloops = computed(() => {
               <ResourceIcon :resource-key="output.resource" size="sm" />
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ output.resource }}</span>
-                <span class="text-chart-3 font-medium">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
+                <span class="font-medium">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
               </div>
             </div>
           </div>

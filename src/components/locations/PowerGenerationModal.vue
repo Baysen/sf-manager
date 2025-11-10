@@ -326,7 +326,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                   <div>
                     <div class="text-muted-foreground mb-1">Power Generation</div>
                     <div class="flex items-center gap-1.5">
-                      <span class="text-chart-3 font-medium">
+                      <span class="font-medium">
                         {{ (
                           (hasVariablePowerOutput && actualPower
                             ? actualPower
@@ -340,7 +340,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                   <div v-if="(allPowerGenerators.find(g => g.key_name === selectedGeneratorType)?.power_consumption || 0) > 0">
                     <div class="text-muted-foreground mb-1">Power Consumption</div>
                     <div class="flex items-center gap-1.5">
-                      <span class="text-chart-4 font-medium">
+                      <span class="font-medium">
                         {{ (
                           (allPowerGenerators.find(g => g.key_name === selectedGeneratorType)?.power_consumption || 0)
                           * config.count
@@ -356,7 +356,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                   <div class="space-y-0.5">
                     <div v-for="input in availableRecipes.find(r => r.id === selectedRecipeId)?.inputs || []" :key="input.resource" class="flex items-center gap-1.5">
                       <span>{{ input.resource }}:</span>
-                      <span class="text-destructive font-medium">
+                      <span class="font-medium">
                         {{ (input.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
                       </span>
                     </div>
@@ -368,7 +368,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                   <div class="space-y-0.5">
                     <div v-for="output in availableRecipes.find(r => r.id === selectedRecipeId)?.outputs || []" :key="output.resource" class="flex items-center gap-1.5">
                       <span>{{ output.resource }}:</span>
-                      <span class="text-chart-3 font-medium">
+                      <span class="font-medium">
                         {{ (output.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
                       </span>
                     </div>

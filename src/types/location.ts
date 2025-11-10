@@ -100,3 +100,10 @@ export interface PowerSummary {
   localGridBreakdown: PowerBreakdown[]; // Breakdown by generator type (connected to grid, local only)
   consumptionBreakdown: PowerBreakdown[]; // Breakdown by consumer type
 }
+
+export interface ResourceAvailability {
+  resource: string; // Resource name
+  needed: number; // Amount this line needs per minute
+  available: number; // Amount available for this line (considering other consumption)
+  hasDeficit: boolean; // True if available < needed
+}
