@@ -4,6 +4,7 @@ import type { ResourceBalance } from '../../types/location';
 import ResourceIcon from '../common/ResourceIcon.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   balances: ResourceBalance[];
@@ -39,10 +40,6 @@ const getStatusText = (status: string) => {
     default: return 'Unknown';
   }
 };
-
-const formatRate = (rate: number) => {
-  return rate.toFixed(1);
-};
 </script>
 
 <template>
@@ -75,7 +72,7 @@ const formatRate = (rate: number) => {
           <div class="pl-1 space-y-1.5">
             <div>
               <span class="text-muted-foreground">Production:</span>
-              <span class="ml-1 font-medium">+{{ formatRate(balance.production) }}/min</span>
+              <span class="ml-1 font-medium">{{ formatRate(balance.production, true) }}</span>
             </div>
 
             <!-- Imports -->
@@ -88,7 +85,7 @@ const formatRate = (rate: number) => {
                 >
                   <span class="text-muted-foreground/70">From</span>
                   <span class="text-primary ml-1">{{ imp.fromLocationName }}</span>:
-                  <span class="ml-1 font-medium">+{{ formatRate(imp.amount) }}/min</span>
+                  <span class="ml-1 font-medium">{{ formatRate(imp.amount, true) }}</span>
                 </div>
               </div>
             </div>
@@ -96,7 +93,7 @@ const formatRate = (rate: number) => {
             <!-- Consumption -->
             <div>
               <span class="text-muted-foreground">Consumption:</span>
-              <span class="ml-1 font-medium">-{{ formatRate(balance.consumption) }}/min</span>
+              <span class="ml-1 font-medium">{{ formatRate(-balance.consumption, true) }}</span>
             </div>
 
             <!-- Exports -->
@@ -109,7 +106,7 @@ const formatRate = (rate: number) => {
                 >
                   <span class="text-muted-foreground/70">To</span>
                   <span class="text-primary ml-1">{{ exp.toLocationName }}</span>:
-                  <span class="ml-1 font-medium">-{{ formatRate(exp.amount) }}/min</span>
+                  <span class="ml-1 font-medium">{{ formatRate(-exp.amount, true) }}</span>
                 </div>
               </div>
             </div>
@@ -118,7 +115,7 @@ const formatRate = (rate: number) => {
             <div class="pt-1.5 text-right">
               <span class="text-muted-foreground font-medium">Net:</span>
               <span :class="['ml-1 font-bold', getStatusColor(balance.status)]">
-                {{ balance.balance >= 0 ? '+' : '' }}{{ formatRate(balance.balance) }}/min
+                {{ formatRate(balance.balance, true) }}
               </span>
             </div>
           </div>

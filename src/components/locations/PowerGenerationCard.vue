@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   powerLine: PowerGenerationLine;
@@ -107,10 +108,10 @@ const getAvailability = (resourceName: string) => {
                       getAvailability(input.resource)!.hasDeficit ? 'text-destructive' : ''
                     ]"
                   >
-                    {{ getAvailability(input.resource)!.available.toFixed(1) }} / {{ getAvailability(input.resource)!.needed.toFixed(1) }}
+                    {{ formatRate(getAvailability(input.resource)!.available) }} / {{ formatRate(getAvailability(input.resource)!.needed) }}
                   </span>
                   <span v-else class="font-medium">
-                    {{ calculateProductionRate(getRecipe()!, powerLine as any, input.resource, true).toFixed(1) }} / min
+                    {{ formatRate(calculateProductionRate(getRecipe()!, powerLine as any, input.resource, true)) }} / min
                   </span>
                   <TriangleAlert
                     v-if="getAvailability(input.resource)?.hasDeficit"
@@ -128,7 +129,7 @@ const getAvailability = (resourceName: string) => {
           <div class="text-muted-foreground mb-1.5 font-medium">Output</div>
           <div class="flex items-center gap-1.5 mb-2">
             <Zap class="h-4 w-4 text-muted-foreground" />
-            <span class="font-medium">{{ getPowerGeneration().toFixed(1) }} MW</span>
+            <span class="font-medium">{{ formatRate(getPowerGeneration()) }} MW</span>
           </div>
           <!-- Waste products (e.g., Uranium Waste) -->
           <div v-if="getRecipe() && getRecipe()!.outputs.length > 0" class="space-y-1">
@@ -137,7 +138,7 @@ const getAvailability = (resourceName: string) => {
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ output.resource }}</span>
                 <span class="font-medium">
-                  {{ calculateProductionRate(getRecipe()!, powerLine as any, output.resource, false).toFixed(1) }}/min
+                  {{ formatRate(calculateProductionRate(getRecipe()!, powerLine as any, output.resource, false)) }}
                 </span>
               </div>
             </div>

@@ -572,6 +572,7 @@ const getLocationName = (locationId: string): string => {
     <ProductionLineModal
       :is-open="isModalOpen"
       :production-line="editingProductionLine"
+      :resource-balances="resourceBalances"
       @close="handleModalClose"
       @save="handleModalSave"
     />
@@ -580,6 +581,7 @@ const getLocationName = (locationId: string): string => {
     <PowerGenerationModal
       :is-open="isPowerGenerationModalOpen"
       :power-line="editingPowerLine"
+      :resource-balances="resourceBalances"
       @close="handlePowerGenerationModalClose"
       @save="handlePowerGenerationModalSave"
     />

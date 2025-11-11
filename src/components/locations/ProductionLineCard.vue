@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   productionLine: ProductionLine;
@@ -116,10 +117,10 @@ const getAvailability = (resourceName: string) => {
                       getAvailability(input.resource)!.hasDeficit ? 'text-destructive' : ''
                     ]"
                   >
-                    {{ getAvailability(input.resource)!.available.toFixed(1) }} / {{ getAvailability(input.resource)!.needed.toFixed(1) }}
+                    {{ formatRate(getAvailability(input.resource)!.available) }} / {{ formatRate(getAvailability(input.resource)!.needed) }}
                   </span>
                   <span v-else class="font-medium">
-                    {{ getCalculatedRate(input.resource, true).toFixed(1) }} / min
+                    {{ formatRate(getCalculatedRate(input.resource, true)) }} / min
                   </span>
                   <TriangleAlert
                     v-if="getAvailability(input.resource)?.hasDeficit"
@@ -131,7 +132,7 @@ const getAvailability = (resourceName: string) => {
           </div>
           <div class="flex items-center gap-1.5 mt-2">
             <Zap class="h-4 w-4 text-muted-foreground" />
-            <span class="font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
+            <span class="font-medium">{{ formatRate(getTotalPower()) }} MW</span>
           </div>
         </div>
 
@@ -143,7 +144,7 @@ const getAvailability = (resourceName: string) => {
               <ResourceIcon :resource-key="output.resource" size="sm" />
               <div class="flex flex-col">
                 <span class="text-muted-foreground text-xs">{{ output.resource }}</span>
-                <span class="font-medium">{{ getCalculatedRate(output.resource, false).toFixed(1) }}/min</span>
+                <span class="font-medium">{{ formatRate(getCalculatedRate(output.resource, false)) }}</span>
               </div>
             </div>
           </div>

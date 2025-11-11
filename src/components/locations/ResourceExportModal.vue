@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import type { ResourceExport, ResourceBalance } from '../../types/location';
 import { useLocations } from '../../composables/useLocations';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -108,7 +109,7 @@ const validationMessages = computed(() => {
       .reduce((sum, exp) => sum + exp.value, 0) + formData.value.value;
 
     if (totalPercentage > 100) {
-      messages.push(`Total export percentage would exceed 100% (currently ${totalPercentage.toFixed(1)}%)`);
+      messages.push(`Total export percentage would exceed 100% (currently ${formatRate(totalPercentage)}%)`);
     }
   }
 
@@ -130,7 +131,7 @@ const validationMessages = computed(() => {
       const availableSurplus = balance.production + totalImports - balance.consumption - totalExports;
 
       if (formData.value.value > availableSurplus) {
-        messages.push(`Export amount exceeds available surplus (${availableSurplus.toFixed(1)}/min)`);
+        messages.push(`Export amount exceeds available surplus (${formatRate(availableSurplus)}/min)`);
       }
     }
   }
@@ -202,7 +203,7 @@ const handleClose = () => {
               :key="balance.resource"
               :value="balance.resource"
             >
-              {{ balance.resource }} (Surplus: {{ balance.balance.toFixed(1) }}/min)
+              {{ balance.resource }} (Surplus: {{ formatRate(balance.balance) }}/min)
             </option>
           </select>
           <p v-if="surplusResources.length === 0" class="mt-1 text-xs text-gray-400">
@@ -272,7 +273,7 @@ const handleClose = () => {
         <div v-if="formData.resource" class="bg-gray-900 rounded-lg p-4 border border-gray-600">
           <p class="text-sm text-gray-300">
             <span class="font-medium">Preview:</span> Will export
-            <span class="text-primary font-semibold">{{ previewAmount.toFixed(1) }}/min</span>
+            <span class="text-primary font-semibold">{{ formatRate(previewAmount) }}</span>
             of {{ formData.resource }}
           </p>
         </div>

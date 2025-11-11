@@ -3,14 +3,11 @@ import { computed } from 'vue';
 import type { PowerSummary } from '../../types/location';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Globe } from 'lucide-vue-next';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   summary: PowerSummary;
 }>();
-
-const formatPower = (power: number) => {
-  return power.toFixed(1);
-};
 
 const netPowerStatus = computed(() => {
   if (props.summary.netPower > 0.1) return 'surplus';
@@ -48,7 +45,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs text-muted-foreground">Total Available:</span>
           <span class="text-base font-bold text-chart-3">
-            {{ formatPower(summary.totalGeneration) }} MW
+            {{ formatRate(summary.totalGeneration) }} MW
           </span>
         </div>
 
@@ -60,7 +57,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
               Global Grid:
             </span>
             <span class="font-medium text-chart-3">
-              {{ formatPower(summary.globalGridGeneration) }} MW
+              {{ formatRate(summary.globalGridGeneration) }} MW
             </span>
           </div>
 
@@ -71,7 +68,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
                 Produced on site:
               </span>
               <span class="font-medium text-chart-3">
-                {{ formatPower(summary.localGridContribution) }} MW
+                {{ formatRate(summary.localGridContribution) }} MW
               </span>
             </div>
 
@@ -84,7 +81,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
               >
                 <span class="text-muted-foreground">{{ item.machineType }}:</span>
                 <span class="font-medium text-chart-3">
-                  {{ formatPower(item.consumption) }} MW
+                  {{ formatRate(item.consumption) }} MW
                 </span>
               </div>
             </div>
@@ -99,7 +96,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
               Local Only:
             </span>
             <span class="font-medium text-chart-3">
-              {{ formatPower(summary.localGeneration) }} MW
+              {{ formatRate(summary.localGeneration) }} MW
             </span>
           </div>
 
@@ -112,7 +109,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
             >
               <span class="text-muted-foreground">{{ item.machineType }}:</span>
               <span class="font-medium text-chart-3">
-                {{ formatPower(item.consumption) }} MW
+                {{ formatRate(item.consumption) }} MW
               </span>
             </div>
           </div>
@@ -129,7 +126,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
         <div class="flex justify-between items-center mb-2">
           <span class="text-xs text-muted-foreground">Local Consumption:</span>
           <span class="text-base font-bold text-chart-5">
-            {{ formatPower(summary.totalConsumption) }} MW
+            {{ formatRate(summary.totalConsumption) }} MW
           </span>
         </div>
 
@@ -142,7 +139,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
           >
             <span class="text-muted-foreground">{{ item.machineType }}:</span>
             <span class="font-medium text-chart-5">
-              {{ formatPower(item.consumption) }} MW
+              {{ formatRate(item.consumption) }} MW
             </span>
           </div>
         </div>
@@ -156,7 +153,7 @@ const hasLocalGridContribution = computed(() => props.summary.localGridContribut
       <div class="flex justify-between items-center">
         <span class="text-xs text-muted-foreground">Net Power:</span>
         <span class="text-base font-bold" :class="netPowerColor">
-          {{ formatPower(summary.netPower) }} MW
+          {{ formatRate(summary.netPower) }} MW
         </span>
       </div>
       <p class="text-xs text-muted-foreground mt-1">
