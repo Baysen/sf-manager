@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, ArrowRight, Calculator, TrendingUp } from 'lucide-vue-next';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   resourceExport: ResourceExport;
@@ -48,7 +49,7 @@ const handleDelete = () => {
               <Calculator class="h-4 w-4 text-muted-foreground" />
               <span class="text-muted-foreground">Mode:</span>
               <Badge variant="secondary" class="text-xs">
-                {{ resourceExport.mode === 'percentage' ? `${resourceExport.value}%` : `${resourceExport.value}/min` }}
+                {{ resourceExport.mode === 'percentage' ? `${resourceExport.value}%` : `${resourceExport.value}` }}
               </Badge>
             </div>
 
@@ -56,7 +57,7 @@ const handleDelete = () => {
               <TrendingUp class="h-4 w-4 text-muted-foreground" />
               <span class="text-muted-foreground">Export Amount:</span>
               <span :class="['font-semibold', hasWarning ? 'text-chart-4' : '']">
-                {{ calculatedAmount.toFixed(1) }}/min
+                {{ formatRate(calculatedAmount) }}
               </span>
             </div>
 

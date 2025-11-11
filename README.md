@@ -97,7 +97,7 @@ The built files will be in the `dist` directory.
 The app uses an **export-driven model**:
 - Define exports from locations with surplus resources
 - Imports are automatically calculated and displayed
-- Choose between percentage (e.g., "60% of surplus") or absolute (e.g., "120/min") export modes
+- Choose between percentage (e.g., "60% of surplus") or absolute (e.g., "120") export modes
 
 ### Data Management
 

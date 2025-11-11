@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatRate } from '@/lib/formatters';
 
 const props = defineProps<{
   extractionLine: ResourceExtractionLine;
@@ -127,7 +128,7 @@ const getTotalPower = () => {
           <div class="text-muted-foreground text-xs">—</div>
           <div class="flex items-center gap-1.5 mt-2">
             <Zap class="h-4 w-4 text-muted-foreground" />
-            <span class="font-medium">{{ getTotalPower().toFixed(1) }} MW</span>
+            <span class="font-medium">{{ formatRate(getTotalPower()) }} MW</span>
           </div>
         </div>
 
@@ -138,7 +139,7 @@ const getTotalPower = () => {
             <ResourceIcon :resource-key="resource.key_name" size="sm" />
             <div class="flex flex-col">
               <span class="text-muted-foreground text-xs">{{ resource.name }}</span>
-              <span class="font-medium">{{ getExtractionRate().toFixed(1) }}/min</span>
+              <span class="font-medium">{{ formatRate(getExtractionRate()) }}</span>
             </div>
           </div>
         </div>

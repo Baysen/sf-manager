@@ -822,6 +822,26 @@ This copies the component into `src/components/ui/[component-name]/`, where you 
 - Use Lucide icons for consistency (`lucide-vue-next`)
 - Follow shadcn-vue patterns - components are meant to be copied and customized
 
+### Number Formatting
+Use the `formatRate` utility function from `@/lib/formatters` for displaying all rates and amounts:
+
+```typescript
+import { formatRate } from '@/lib/formatters';
+
+// Basic usage - only shows decimals if not a whole number
+formatRate(120)      // "120"
+formatRate(123.5)    // "123.5"
+
+// With sign - adds + for positive numbers
+formatRate(120, true)   // "+120"
+formatRate(-50, true)   // "-50"
+```
+
+**Guidelines:**
+- Use `formatRate()` for all production/consumption rates, power values, and resource amounts
+- Use `includeSign: true` for values that need explicit +/- signs (like in resource summaries)
+- Do NOT use `.toFixed(1)` directly - always use the shared utility for consistency
+
 ## File Structure
 ```
 src/
@@ -863,7 +883,8 @@ src/
 │   ├── location.ts
 │   └── productionLine.ts
 ├── lib/                             # Utility functions
-│   └── utils.ts
+│   ├── utils.ts
+│   └── formatters.ts               # Number formatting utilities
 ├── data/                            # Static data
 │   └── source-data.json
 ├── assets/

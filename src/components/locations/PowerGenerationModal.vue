@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import type { PowerGenerationLine, OverclockingConfig } from '../../types/location'
+import type { PowerGenerationLine, OverclockingConfig, ResourceBalance } from '../../types/location'
 import { usePowerGenerators } from '../../composables/usePowerGenerators'
+import { useCalculations } from '../../composables/useCalculations'
+import { useRecipes } from '../../composables/useRecipes'
+import ResourceIcon from '../common/ResourceIcon.vue'
+import { formatRate } from '@/lib/formatters'
 
 import {
   Dialog,
@@ -23,10 +27,13 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { TriangleAlert } from 'lucide-vue-next'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const props = defineProps<{
   isOpen: boolean
   powerLine?: PowerGenerationLine | null
+  resourceBalances: ResourceBalance[]
 }>()
 
 const emit = defineEmits<{
@@ -35,6 +42,8 @@ const emit = defineEmits<{
 }>()
 
 const { allPowerGenerators, getRecipesForGenerator, isFuelBased, isGeothermal, hasVariablePower } = usePowerGenerators()
+const { calculateLineResourceAvailability } = useCalculations()
+const { getRecipeById } = useRecipes()
 
 // Form state
 const selectedGeneratorType = ref<string>('')
@@ -48,6 +57,35 @@ const overclockingConfigs = ref<OverclockingConfig[]>([
 // Calculate total machine count
 const totalMachineCount = computed(() => {
   return overclockingConfigs.value.reduce((sum, config) => sum + config.count, 0)
+})
+
+// Calculate resource availability warnings for fuel-based generators
+const resourceWarnings = computed(() => {
+  if (!selectedRecipeId.value || overclockingConfigs.value.length === 0) return []
+
+  const recipe = getRecipeById(selectedRecipeId.value)
+  if (!recipe) return []
+
+  // Create a hypothetical power line from current form values
+  const hypotheticalLine: PowerGenerationLine = {
+    id: props.powerLine?.id || 'temp',
+    generatorType: selectedGeneratorType.value,
+    recipeId: selectedRecipeId.value,
+    machineCount: totalMachineCount.value,
+    overclocking: overclockingConfigs.value,
+    connectedToGrid: connectedToGrid.value,
+    actualPower: actualPower.value
+  }
+
+  // Use existing calculation function (cast to ProductionLine for compatibility)
+  const availabilities = calculateLineResourceAvailability(
+    hypotheticalLine as any,
+    recipe,
+    props.resourceBalances
+  )
+
+  // Return only resources with deficits
+  return availabilities.filter(a => a.hasDeficit)
 })
 
 // Get available recipes for selected generator
@@ -357,7 +395,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                     <div v-for="input in availableRecipes.find(r => r.id === selectedRecipeId)?.inputs || []" :key="input.resource" class="flex items-center gap-1.5">
                       <span>{{ input.resource }}:</span>
                       <span class="font-medium">
-                        {{ (input.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
+                        {{ (input.amount * config.count * (config.percentage / 100)).toFixed(2) }}
                       </span>
                     </div>
                   </div>
@@ -369,7 +407,7 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
                     <div v-for="output in availableRecipes.find(r => r.id === selectedRecipeId)?.outputs || []" :key="output.resource" class="flex items-center gap-1.5">
                       <span>{{ output.resource }}:</span>
                       <span class="font-medium">
-                        {{ (output.amount * config.count * (config.percentage / 100)).toFixed(2) }}/min
+                        {{ (output.amount * config.count * (config.percentage / 100)).toFixed(2) }}
                       </span>
                     </div>
                   </div>
@@ -402,6 +440,21 @@ const presetClockSpeeds = [50, 100, 150, 200, 250]
           </p>
         </div>
       </div>
+
+      <!-- Resource Warnings -->
+      <Alert v-if="resourceWarnings.length > 0" variant="destructive" class="mt-4">
+        <TriangleAlert class="h-4 w-4" />
+        <AlertDescription>
+          <div class="font-semibold mb-2">Insufficient fuel:</div>
+          <div class="space-y-1 text-sm">
+            <div v-for="warning in resourceWarnings" :key="warning.resource" class="flex items-center gap-2">
+              <ResourceIcon :resource-key="warning.resource" size="xs" />
+              <span>{{ warning.resource }}:</span>
+              <span class="font-medium">needs {{ formatRate(warning.needed) }}, only {{ formatRate(warning.available) }} available</span>
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
 
       <DialogFooter>
         <Button @click="emit('close')" variant="outline" type="button">

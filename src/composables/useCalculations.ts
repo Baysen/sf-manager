@@ -285,12 +285,12 @@ export function useCalculations() {
             exportAmount = exportConfig.value;
           }
 
-          // Add to imports
+          // Add to imports (ensure positive amount)
           const current = resourceMap.get(exportConfig.resource) || { production: 0, consumption: 0, imports: [], exports: [] };
           current.imports.push({
             fromLocationId: otherLocation.id,
             fromLocationName: otherLocation.name,
-            amount: exportAmount
+            amount: Math.max(0, exportAmount) // Never negative
           });
           resourceMap.set(exportConfig.resource, current);
         }
@@ -318,7 +318,7 @@ export function useCalculations() {
         current.exports.push({
           toLocationId: exportConfig.toLocationId,
           toLocationName: destinationLocation?.name || 'Unknown',
-          amount: exportAmount
+          amount: Math.max(0, exportAmount) // Never negative
         });
       }
     }

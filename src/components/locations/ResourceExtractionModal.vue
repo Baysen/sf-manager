@@ -523,7 +523,7 @@ const handleSave = () => {
                     <div class="text-muted-foreground mb-1">Extraction Rate</div>
                     <div class="flex items-center gap-1.5">
                       <span class="font-medium">
-                        {{ calculateConfigRate(config).toFixed(2) }}/min
+                        {{ calculateConfigRate(config).toFixed(2) }}
                       </span>
                     </div>
                   </div>

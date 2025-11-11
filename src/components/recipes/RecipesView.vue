@@ -104,7 +104,7 @@ const {
                 <div v-for="input in recipe.inputs" :key="input.resource" class="text-xs flex items-center gap-1.5">
                   <ResourceIcon :resource-key="input.resource" size="sm" />
                   <span class="text-muted-foreground">{{ input.resource }}:</span>
-                  <span class="text-destructive font-medium ml-auto">{{ input.amount }}/min</span>
+                  <span class="text-destructive font-medium ml-auto">{{ input.amount }}</span>
                 </div>
               </div>
             </div>
@@ -115,7 +115,7 @@ const {
                 <div v-for="output in recipe.outputs" :key="output.resource" class="text-xs flex items-center gap-1.5">
                   <ResourceIcon :resource-key="output.resource" size="sm" />
                   <span class="text-muted-foreground">{{ output.resource }}:</span>
-                  <span class="text-chart-3 font-medium ml-auto">{{ output.amount }}/min</span>
+                  <span class="text-chart-3 font-medium ml-auto">{{ output.amount }}</span>
                 </div>
               </div>
             </div>
