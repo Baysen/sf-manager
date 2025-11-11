@@ -13,7 +13,17 @@
 - [x] Accordion-like functionality to collapse sections (Resource Extraction, etc.)
 - [ ] Manual grouping of locations (+ drag and drop)
 
-## Phase 3 (Future)
+## Phase 3 (Cloud Sharing)
+- [ ] **Factory Sharing System**
+  - Provider-agnostic storage architecture (interface-based design)
+  - GitHub Gists provider with Device Flow authentication
+  - Share factories with unique URLs (`?share=gh:gist_id` with provider prefix)
+  - Update existing shares (authenticated users only)
+  - List and manage user's shared factories
+  - Fork/import shared factories to local storage
+  - Share modal UI with login flow
+
+## Phase 4 (Future Enhancements)
 - Enhanced resource flow visualization
 - Optimization suggestions:
   - Small surplus corrections (e.g., 15 iron ore → suggest overclocking to 150%)
@@ -24,7 +34,6 @@
 - Compact mode (tighter layouts)
 - Drag and drop sorting
 - "Path to resource goal" - calculate exact machines needed to reach production target
-- URL-based factory sharing
 - i18n support
 
 ## Stretch Goals
